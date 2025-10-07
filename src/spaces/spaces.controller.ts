@@ -11,7 +11,7 @@ export class SpacesController {
 
   @Get()
   list() {
-    return this.spacesService.list();
+    return this.spacesService.list();  
   }
 
   @Get(':id')

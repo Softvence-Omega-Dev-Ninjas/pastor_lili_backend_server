@@ -20,4 +20,14 @@ export class MailService {
       from: process.env.EMAIL_USER
     });
   }
+
+  async forgetPassOtp(to:string, otp: string, subject = "Your Forget Password OTP"){
+     const html = `<p>Your OTP code: <b>${otp}</b></p><p>It will expire in 10 minutes.</p>`;
+    await this.transporter.sendMail({
+      to,
+      subject,
+      html,
+      from: process.env.EMAIL_USER
+    });
+  }
 }
