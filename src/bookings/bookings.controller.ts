@@ -1,0 +1,41 @@
+import { Controller, Post, Body, UseGuards, Req, Headers, Res, Patch, Param, Get } from '@nestjs/common';
+import { BookingsService } from './bookings.service';
+import { JwtAuthGuard } from '../common/guards/jwt.guard';
+import { CreateBookingDto } from './dto/create-booking.dto';
+import { ConfigService } from '@nestjs/config';
+import type { Response } from 'express';
+
+@Controller('bookings')
+export class BookingsController {
+    constructor(private bookingsService: BookingsService, private config: ConfigService) { }
+
+    @UseGuards(JwtAuthGuard)
+    @Post()
+    create(@Req() req: any, @Body() dto: CreateBookingDto) {
+        return this.bookingsService.createBooking(req.user.sub, dto);
+    }
+
+    // Stripe webhook - expects raw body; route registered in main.ts as raw.
+    @Post('webhook')
+    async webhook(@Req() req: any, @Headers('stripe-signature') sig: string, @Res() res: Response) {
+        const endpointSecret: string | undefined = process.env.STRIPE_WEBHOOK_SECRET;
+        if (!endpointSecret) {
+            throw new Error("Missing Stripe Webhook Secret!");
+        }
+        const rawBody = req.body; // express.raw set in main.ts for this route
+        const result = await this.bookingsService.handleStripeWebhook(rawBody, sig, endpointSecret);
+        return res.json(result);
+    }
+
+    // admin confirm (protect with role guard in route in real project)
+    @Patch(':id/confirm')
+    adminConfirm(@Param('id') id: string, @Body('approve') approve: boolean) {
+        return this.bookingsService.adminConfirm(id, approve);
+    }
+
+    @UseGuards(JwtAuthGuard)
+    @Get('me')
+    myBookings(@Req() req: any) {
+        return this.bookingsService.listForUser(req.user.sub);
+    }
+}

@@ -1,0 +1,111 @@
+import { Injectable, UnauthorizedException, BadRequestException } from '@nestjs/common';
+import { PrismaService } from '../prisma/prisma.service';
+import * as bcrypt from 'bcrypt';
+import { JwtService } from '@nestjs/jwt';
+import { ConfigService } from '@nestjs/config';
+import { MailService } from 'src/mail/mail.service';
+
+@Injectable()
+export class AuthService {
+  constructor(
+    private prisma: PrismaService,
+    private jwt: JwtService,
+    private mail: MailService,
+    private config: ConfigService
+  ) {}
+
+  private generateOtp() {
+    return Math.floor(100000 + Math.random() * 900000).toString();
+  }
+
+  async signup(dto: { fullName: string; email: string; password: string }) {
+    const exists = await this.prisma.user.findUnique({ where: { email: dto.email } });
+    if (exists) throw new BadRequestException('Email already registered');
+    const hash = await bcrypt.hash(dto.password, 10);
+    const otp = this.generateOtp();
+    const otpExpiry = new Date(Date.now() + 10 * 60 * 1000);
+    const user = await this.prisma.user.create({
+      data: { fullName: dto.fullName, email: dto.email, password: hash, otp, otpExpiresAt: otpExpiry, verified: false }
+    });
+    await this.mail.sendOtp(dto.email, otp);
+    return { message: 'User created. OTP sent to email.' };
+  }
+
+  async verifyOtp(email: string, otp: string) {
+    const user = await this.prisma.user.findUnique({ where: { email } });
+    if (!user) throw new UnauthorizedException('No user');
+    if (user.verified) return { message: 'Already verified' };
+    if (!user.otp || user.otp !== otp || !user.otpExpiresAt || user.otpExpiresAt < new Date()) {
+      throw new UnauthorizedException('Invalid or expired otp');
+    }
+    await this.prisma.user.update({ where: { email }, data: { verified: true, otp: null, otpExpiresAt: null } });
+    return { message: 'Verified' };
+  }
+
+  async login(dto: { email: string; password: string }) {
+    const user = await this.prisma.user.findUnique({ where: { email: dto.email } });
+    if (!user || !user.password) throw new UnauthorizedException('Invalid credentials');
+    const ok = await bcrypt.compare(dto.password, user.password);
+    if (!ok) throw new UnauthorizedException('Invalid credentials');
+    return this.getTokens(user.id, user.email, user.role);
+  }
+
+  async getTokens(userId: string, email: string, role: string) {
+    const payload = { sub: userId, email, role };
+    const accessToken = this.jwt.sign(payload, { secret: this.config.get('JWT_SECRET'), expiresIn: '15m' });
+    const refreshToken = this.jwt.sign(payload, { secret: this.config.get('JWT_REFRESH_SECRET'), expiresIn: '7d' });
+    return { accessToken, refreshToken };
+  }
+
+  async refreshTokens(refreshToken: string) {
+    try {
+      const payload = this.jwt.verify(refreshToken, { secret: this.config.get('JWT_REFRESH_SECRET') }) as any;
+      return this.getTokens(payload.sub, payload.email, payload.role);
+    } catch (err) {
+      throw new UnauthorizedException('Invalid refresh token');
+    }
+  }
+
+  async forgotPassword(email: string) {
+    const user = await this.prisma.user.findUnique({ where: { email } });
+    if (!user) throw new BadRequestException('No user');
+    const otp = this.generateOtp();
+    const otpExpiry = new Date(Date.now() + 10 * 60 * 1000);
+    await this.prisma.user.update({ where: { email }, data: { otp, otpExpiresAt: otpExpiry } });
+    await this.mail.sendOtp(email, otp, 'Password reset OTP');
+    return { message: 'OTP sent' };
+  }
+
+  async resetPassword(email: string, otp: string, newPassword: string) {
+    const user = await this.prisma.user.findUnique({ where: { email } });
+    if (!user) throw new BadRequestException('No user');
+    if (!user.otp || user.otp !== otp || !user.otpExpiresAt || user.otpExpiresAt < new Date())
+      throw new UnauthorizedException('Invalid or expired otp');
+    const hash = await bcrypt.hash(newPassword, 10);
+    await this.prisma.user.update({ where: { email }, data: { password: hash, otp: null, otpExpiresAt: null } });
+    return { message: 'Password reset successful' };
+  }
+
+  // Google & Facebook login handlers (called by strategies)
+  async oauthLogin(profile: { email: string; id: string; name?: string; picture?: string; provider: 'google' | 'facebook' }) {
+    let user = await this.prisma.user.findUnique({ where: { email: profile.email } });
+    if (!user) {
+      const createData: any = {
+        email: profile.email,
+        fullName: profile.name || profile.email,
+        verified: true,
+        avatar: profile.picture
+      };
+      if (profile.provider === 'google') createData.googleId = profile.id;
+      if (profile.provider === 'facebook') createData.facebookId = profile.id;
+      user = await this.prisma.user.create({ data: createData });
+    } else {
+      // attach provider id if missing
+      const updateData: any = {};
+      if (profile.provider === 'google' && !user.googleId) updateData.googleId = profile.id;
+      if (profile.provider === 'facebook' && !user.facebookId) updateData.facebookId = profile.id;
+      if (Object.keys(updateData).length) await this.prisma.user.update({ where: { id: user.id }, data: updateData });
+    }
+    return this.getTokens(user.id, user.email, user.role);
+  }
+}
