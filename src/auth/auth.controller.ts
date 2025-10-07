@@ -2,18 +2,29 @@ import { Controller, Post, Body, UseGuards, Req, Get, Query } from '@nestjs/comm
 import { SignupDto } from './dto/signup.dto';
 import { LoginDto } from './dto/login.dto';
 import { AuthService } from './auth.service';
+import { ResendOtpDto, VerifyOtpDto } from './dto/verifyOtp.dto';
 
 @Controller('auth')
 export class AuthController {
-  constructor(private authService: AuthService) {}
+  constructor(private authService: AuthService) { }
 
   @Post('signup')
   signup(@Body() dto: SignupDto) {
     return this.authService.signup(dto);
   }
 
+  @Post('emailVerify-otp')
+  resendOtp(@Body() body: ResendOtpDto) {
+    return this.authService.resendOtp(body.email);
+  }
+
+  @Post('forgetPassword-otp')
+  forgetPasswordOtp(@Body() body: ResendOtpDto) {
+    return this.authService.forgetPasswordOtp(body.email)
+  }
+
   @Post('verify-otp')
-  verifyOtp(@Body() body: { email: string; otp: string }) {
+  verifyOtp(@Body() body: VerifyOtpDto) {
     return this.authService.verifyOtp(body.email, body.otp);
   }
 

@@ -8,22 +8,23 @@ datasource db {
 }
 
 model User {
-  id             String    @id @default(uuid())
-  fullName       String
-  email          String    @unique
-  password       String?
-  googleId       String?   @unique
-  facebookId     String?   @unique
-  avatar         String?
-  otp            String?
-  otpExpiresAt   DateTime?
-  verified       Boolean   @default(false)
-  role           Role      @default(USER)
-  createdAt      DateTime  @default(now())
-  updatedAt      DateTime  @updatedAt
-  bookings       Booking[]
-  sentMessages   Message[] @relation("SentMessages")
-  recvMessages   Message[] @relation("ReceivedMessages")
+  id           String           @id @default(uuid())
+  fullName     String
+  email        String           @unique
+  password     String?
+  googleId     String?          @unique
+  facebookId   String?          @unique
+  avatar       String?
+  otp          String?
+  otpExpiresAt DateTime?
+  verified     Boolean          @default(false)
+  role         Role             @default(USER)
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
+  bookings     Booking[]
+
+  sentMessages Message[]        @relation("SentMessages")
+  recvMessages Message[]        @relation("ReceivedMessages")
 }
 
 model Space {
@@ -39,30 +40,30 @@ model Space {
 }
 
 model Booking {
-  id         String        @id @default(uuid())
-  userId     String
-  spaceId    String
-  startTime  DateTime
-  endTime    DateTime
-  status     BookingStatus @default(PENDING)
-  paymentId  String?
-  amount     Float
-  createdAt  DateTime      @default(now())
-  user       User          @relation(fields: [userId], references: [id])
-  space      Space         @relation(fields: [spaceId], references: [id])
+  id        String        @id @default(uuid())
+  userId    String
+  spaceId   String
+  startTime DateTime
+  endTime   DateTime
+  status    BookingStatus @default(PENDING)
+  paymentId String?
+  amount    Float
+  createdAt DateTime      @default(now())
+  user      User          @relation(fields: [userId], references: [id])
+  space     Space         @relation(fields: [spaceId], references: [id])
 
   Payment Payment[]
 }
 
 model Payment {
-  id            String   @id @default(uuid())
-  stripePaymentId String @unique
-  bookingId     String?
-  amount        Float
-  currency      String   @default("usd")
-  status        String
-  createdAt     DateTime @default(now())
-  booking       Booking? @relation(fields: [bookingId], references: [id])
+  id              String   @id @default(uuid())
+  stripePaymentId String   @unique
+  bookingId       String?
+  amount          Float
+  currency        String   @default("usd")
+  status          String
+  createdAt       DateTime @default(now())
+  booking         Booking? @relation(fields: [bookingId], references: [id])
 }
 
 model Message {
@@ -87,3 +88,5 @@ enum BookingStatus {
   REJECTED
   COMPLETED
 }
+
+
