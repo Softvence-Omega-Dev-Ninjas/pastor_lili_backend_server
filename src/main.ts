@@ -25,6 +25,6 @@ async function bootstrap() {
   expressApp.post('/bookings/webhook', express.raw({ type: 'application/json' }));
 
   await app.listen(process.env.PORT || 3000);
-  console.log('Listening on', await app.getUrl());
+
 }
 bootstrap();
