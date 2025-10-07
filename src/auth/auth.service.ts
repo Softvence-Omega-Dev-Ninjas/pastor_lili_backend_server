@@ -14,13 +14,12 @@ export class AuthService {
     private config: ConfigService
   ) {}
 
-  private generateOtp() {
-    return Math.floor(100000 + Math.random() * 900000).toString();
-  }
-
+private generateOtp() {
+  return Math.floor(1000 + Math.random() * 9000).toString();
+}
   async signup(dto: { fullName: string; email: string; password: string }) {
     const exists = await this.prisma.user.findUnique({ where: { email: dto.email } });
-    if (exists) throw new BadRequestException('Email already registered');
+    if (exists) throw new BadRequestException('You already registered. Please Login');
     const hash = await bcrypt.hash(dto.password, 10);
     const otp = this.generateOtp();
     const otpExpiry = new Date(Date.now() + 10 * 60 * 1000);
@@ -30,6 +29,49 @@ export class AuthService {
     await this.mail.sendOtp(dto.email, otp);
     return { message: 'User created. OTP sent to email.' };
   }
+
+  async resendOtp(email: string) {
+  const user = await this.prisma.user.findUnique({ where: { email } });
+  if (!user) throw new BadRequestException('No user found with this email');
+
+  if (user.verified) {
+    throw new BadRequestException('This email is already verified.');
+  }
+
+  const otp = this.generateOtp(); // 4-digit OTP
+  const otpExpiry = new Date(Date.now() + 10 * 60 * 1000); // 10 mins validity
+
+  await this.prisma.user.update({
+    where: { email },
+    data: { otp, otpExpiresAt: otpExpiry },
+  });
+
+  await this.mail.sendOtp(email, otp, 'Email Verification OTP');
+
+  return { message: 'New OTP sent to your email.' };
+}
+// forget password......
+async forgetPasswordOtp(email: string){
+   const user = await this.prisma.user.findUnique({ where: { email } });
+  if (!user) throw new BadRequestException('No user found with this email');
+
+  if (!user.verified) {
+    throw new BadRequestException('Your Email is not verified.');
+  }
+
+    const otp = this.generateOtp(); // 4-digit OTP
+  const otpExpiry = new Date(Date.now() + 10 * 60 * 1000); // 10 mins validity
+
+   await this.prisma.user.update({
+    where: { email },
+    data: { otp, otpExpiresAt: otpExpiry },
+  });
+
+    await this.mail.forgetPassOtp(email, otp, 'Forget Password OTP');
+
+  return { message: 'New OTP sent to your email.' };
+}
+
 
   async verifyOtp(email: string, otp: string) {
     const user = await this.prisma.user.findUnique({ where: { email } });
