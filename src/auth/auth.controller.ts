@@ -22,22 +22,27 @@ export class AuthController {
   login(@Body() dto: LoginDto) {
     return this.authService.login(dto);
   }
-
+  // email verify otp
   @Post('emailVerify-otp')
   resendOtp(@Body() body: ResendOtpDto) {
     return this.authService.resendOtp(body.email);
   }
-
-  @Post('forgetPassword-otp')
-  forgetPasswordOtp(@Body() body: ResendOtpDto) {
-    return this.authService.forgetPasswordOtp(body.email)
-  }
-
+  // otp verification for email verified 
   @Post('verify-otp')
   verifyOtp(@Body() body: VerifyOtpDto) {
     return this.authService.verifyOtp(body.email, body.otp);
   }
 
+  // forget password send otp
+  @Post('forgetPassword-otp')
+  forgetPasswordOtp(@Body() body: ResendOtpDto) {
+    return this.authService.forgetPasswordOtp(body.email)
+  }
+  // forget password send otp verify..
+ @Post('verify-forget-otp')
+  forgetVerifyOtp(@Body() body: VerifyOtpDto) {
+    return this.authService.forgetVerifyOtp(body.email, body.otp);
+  }
 
 
   // @Post('refresh')
@@ -48,7 +53,7 @@ export class AuthController {
 
   @Post('forget-password')
   reset(@Body() dto: ForgetPasswordDto) {
-    return this.authService.resetPassword(dto.email, dto.otp, dto.newPassword);
+    return this.authService.resetPassword(dto.email, dto.newPassword);
   }
 
 
