@@ -4,6 +4,10 @@ import { LoginDto } from './dto/login.dto';
 import { AuthService } from './auth.service';
 import { ResendOtpDto, VerifyOtpDto } from './dto/verifyOtp.dto';
 import { ForgetPasswordDto } from './dto/forgetPassword.dto';
+import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { JwtAuthGuard } from 'src/common/guards/jwt.guard';
+import { GetUser } from 'src/common/decorators/get-user.decorator';
+
 
 @Controller('auth')
 export class AuthController {
@@ -14,7 +18,7 @@ export class AuthController {
     return this.authService.signup(dto);
   }
 
-   @Post('login')
+  @Post('login')
   login(@Body() dto: LoginDto) {
     return this.authService.login(dto);
   }
@@ -34,7 +38,7 @@ export class AuthController {
     return this.authService.verifyOtp(body.email, body.otp);
   }
 
- 
+
 
   // @Post('refresh')
   // refresh(@Body() body: { refreshToken: string }) {
@@ -46,6 +50,7 @@ export class AuthController {
   reset(@Body() dto: ForgetPasswordDto) {
     return this.authService.resetPassword(dto.email, dto.otp, dto.newPassword);
   }
+
 
   // OAuth entry points will typically be frontend handled. Provide callback endpoints if needed.
 }
