@@ -11,7 +11,7 @@ export class SignupDto {
 
   @ApiProperty({
     description: 'Email address of the user',
-    example: 'johndoe@example.com',
+    example: 'johndoe@gmail.com',
   })
   @IsEmail()
   email: string;
