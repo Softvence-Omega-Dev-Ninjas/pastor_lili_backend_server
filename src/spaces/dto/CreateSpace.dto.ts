@@ -12,7 +12,7 @@ export class CreateSpaceDto {
 
   @ApiProperty({ 
     example: 'A cozy apartment near the beach with sea view', 
-    description: 'Description of the space' 
+    description: 'Description of the space'
   })
   @IsNotEmpty()
   @IsString()
