@@ -95,8 +95,8 @@ export class AuthService {
   async getTokens(userId: string, email: string, role: string) {
     const user = await this.prisma.user.findUnique({ where: { id: userId } });
     const payload = { sub: userId, email, role };
-    const accessToken = this.jwt.sign(payload, { secret: this.config.get('JWT_SECRET'), expiresIn: '15m' });
-    const refreshToken = this.jwt.sign(payload, { secret: this.config.get('JWT_REFRESH_SECRET'), expiresIn: '7d' });
+    const accessToken = this.jwt.sign(payload, { secret: process.env.JWT_SECRET, expiresIn: process.env.JWT_ACCESS_EXPIRE});
+    const refreshToken = this.jwt.sign(payload, { secret: process.env.JWT_REFRESH_SECRET, expiresIn: process.env.JWT_REFRESH_EXPIRE });
     return { user, accessToken, refreshToken };
   }
 
