@@ -8,7 +8,7 @@ import cookieParser from 'cookie-parser';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   const config = new DocumentBuilder()
-    .setTitle('Space Booking API')
+    .setTitle('Pastor_lili API')
     .setVersion('1.0')
     .addBearerAuth()
     .build();
