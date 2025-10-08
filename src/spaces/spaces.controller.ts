@@ -4,14 +4,23 @@ import { JwtAuthGuard } from '../common/guards/jwt.guard';
 import { Roles } from '../common/decorators/roles.decorator';
 import { RolesGuard } from '../common/guards/roles.guard';
 import { Reflector } from '@nestjs/core';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { GetUser } from 'src/common/decorators/get-user.decorator';
+import { CreateSpaceDto } from './dto/CreateSpace.dto';
+import { handleRequest } from 'src/common/utils/handle.request';
 
+
+@ApiTags("Spaces")
+@ApiBearerAuth("JWT-auth")
+@UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('spaces')
 export class SpacesController {
-  constructor(private spacesService: SpacesService, private reflector: Reflector) {}
+  constructor(private spacesService: SpacesService, private reflector: Reflector) { }
 
-  @Get()
-  list() {
-    return this.spacesService.list();  
+  @Get("/")
+  list(@GetUser('id') userId: string) {
+    return handleRequest(() => this.spacesService.list(userId), 'Get All Space Successfully')
+
   }
 
   @Get(':id')
@@ -20,11 +29,13 @@ export class SpacesController {
   }
 
   // Admin routes (create/update/delete)
-  @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('ADMIN', 'SUPERADMIN')
-  @Post()
-  create(@Body() body: any) {
-    return this.spacesService.create(body);
+  @Post("/")
+  create(@Body() dto: CreateSpaceDto, @GetUser('id') userId: string) {
+    return handleRequest(
+      () => this.spacesService.create(userId, dto),
+      'Space created successfully',
+    );
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)
