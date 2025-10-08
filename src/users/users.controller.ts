@@ -1,8 +1,9 @@
-import { Controller, Get, Patch, Body, UseGuards, Req } from '@nestjs/common';
+import { Controller, Get, Patch, Body, UseGuards, Req, Post } from '@nestjs/common';
 import { JwtAuthGuard } from '../common/guards/jwt.guard';
 import { UsersService } from './users.service';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { GetUser } from 'src/common/decorators/get-user.decorator';
+import { UpdateUserDto } from './dto/userUpdate.dto';
 
 
 @ApiTags("Users")
@@ -18,7 +19,7 @@ export class UsersController {
   }
 
   @Patch('me')
-  update(@Req() req: any, @Body() body: any) {
-    return this.usersService.updateProfile(req.user.sub, body);
+  update(@GetUser('id') userId: string, @Body() dto: UpdateUserDto) {
+    return this.usersService.updateProfile(userId, dto);
   }
 }
