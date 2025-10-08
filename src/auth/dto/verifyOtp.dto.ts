@@ -4,7 +4,7 @@ import { ApiProperty } from '@nestjs/swagger';
 export class VerifyOtpDto {
     @ApiProperty({
         description: 'Email address of the user',
-        example: 'johndoe@example.com',
+        example: 'johndoe@gmail.com',
     })
     @IsEmail()
     email: string;
@@ -19,7 +19,7 @@ export class VerifyOtpDto {
 }
 
 export class ResendOtpDto {
-    @ApiProperty({ example: 'john@example.com' })
+    @ApiProperty({ example: 'john@gmail.com' })
     @IsEmail()
     email: string;
 }
