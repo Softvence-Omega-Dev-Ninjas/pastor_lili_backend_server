@@ -10,11 +10,21 @@ async function bootstrap() {
   const config = new DocumentBuilder()
     .setTitle('Pastor_lili API')
     .setVersion('1.0')
-    .addBearerAuth()
+    .addBearerAuth({
+      type:"http",
+      scheme:"bearer",
+      bearerFormat:"JWT",
+    },
+    "JWT-auth",
+  )
     .build();
 
   const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('docs', app, document);
+  SwaggerModule.setup('docs', app, document, {
+    swaggerOptions:{
+      persistAuthorization: true,
+    }
+  });
 
   app.use(cookieParser());
   app.use(json({ limit: '10mb' }));
