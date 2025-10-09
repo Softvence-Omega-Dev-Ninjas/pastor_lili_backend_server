@@ -13,8 +13,6 @@ export class BookingsService {
         this.stripe = new Stripe(stripeSecret, {
             apiVersion: '2025-09-30.clover', // <- updated version
         });
-
-
     }
 
 
