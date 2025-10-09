@@ -4,15 +4,24 @@ import { JwtAuthGuard } from '../common/guards/jwt.guard';
 import { CreateBookingDto } from './dto/create-booking.dto';
 import { ConfigService } from '@nestjs/config';
 import type { Response } from 'express';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { GetUser } from 'src/common/decorators/get-user.decorator';
+import { handleRequest } from 'src/common/utils/handle.request';
 
+@ApiTags("Bookings")
+@ApiBearerAuth("JWT-auth")
+@UseGuards(JwtAuthGuard)
 @Controller('bookings')
 export class BookingsController {
     constructor(private bookingsService: BookingsService, private config: ConfigService) { }
 
-    @UseGuards(JwtAuthGuard)
     @Post()
-    create(@Req() req: any, @Body() dto: CreateBookingDto) {
-        return this.bookingsService.createBooking(req.user.sub, dto);
+    create(@GetUser('id') userId: string, @Body() dto: CreateBookingDto) {
+        console.log(userId, dto)
+          return handleRequest(
+              () => this.bookingsService.createBooking(userId, dto),
+              'Added Bookingd successfully',
+            );
     }
 
     // Stripe webhook - expects raw body; route registered in main.ts as raw.
