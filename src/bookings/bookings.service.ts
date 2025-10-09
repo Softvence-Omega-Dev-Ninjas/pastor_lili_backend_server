@@ -2,6 +2,7 @@ import { Injectable, BadRequestException } from '@nestjs/common';
 import Stripe from 'stripe';
 import { PrismaService } from '../prisma/prisma.service';
 import { ConfigService } from '@nestjs/config';
+import { CreateBookingDto } from './dto/create-booking.dto';
 
 @Injectable()
 export class BookingsService {
@@ -16,7 +17,7 @@ export class BookingsService {
     }
 
 
-    async createBooking(userId: string, dto: any) {
+    async createBooking(userId: string, dto: CreateBookingDto) {
         // check overlap simple
         const overlap = await this.prisma.booking.findFirst({
             where: {
@@ -59,6 +60,7 @@ export class BookingsService {
     }
 
     async handleStripeWebhook(rawBody: Buffer, sig: string, endpointSecret: string) {
+        console.log(rawBody, "Payload");
         let event;
         try {
             event = this.stripe.webhooks.constructEvent(rawBody, sig, endpointSecret);
