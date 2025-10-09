@@ -7,6 +7,7 @@ import { ForgetPasswordDto } from './dto/forgetPassword.dto';
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from 'src/common/guards/jwt.guard';
 import { GetUser } from 'src/common/decorators/get-user.decorator';
+import { handleRequest } from 'src/common/utils/handle.request';
 
 
 @Controller('auth')
@@ -15,12 +16,19 @@ export class AuthController {
 
   @Post('signup')
   signup(@Body() dto: SignupDto) {
-    return this.authService.signup(dto);
+    return handleRequest(
+      () => this.authService.signup(dto),
+      'User created successfully',
+    );
   }
 
   @Post('login')
   login(@Body() dto: LoginDto) {
-    return this.authService.login(dto);
+    return handleRequest(
+      () => this.authService.login(dto),
+      'User login successfully',
+    );
+
   }
   // email verify otp
   @Post('emailVerify-otp')
@@ -39,7 +47,7 @@ export class AuthController {
     return this.authService.forgetPasswordOtp(body.email)
   }
   // forget password send otp verify..
- @Post('verify-forget-otp')
+  @Post('verify-forget-otp')
   forgetVerifyOtp(@Body() body: VerifyOtpDto) {
     return this.authService.forgetVerifyOtp(body.email, body.otp);
   }
