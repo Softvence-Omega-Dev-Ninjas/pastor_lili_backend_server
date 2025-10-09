@@ -4,6 +4,7 @@ import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { MailService } from 'src/mail/mail.service';
+import { SignupDto } from './dto/signup.dto';
 
 @Injectable()
 export class AuthService {
@@ -18,8 +19,9 @@ export class AuthService {
     return Math.floor(1000 + Math.random() * 9000).toString();
   }
   // create new user...
-  async signup(dto: { fullName: string; email: string; password: string }) {
-    const exists = await this.prisma.user.findUnique({ where: { email: dto.email } });
+  async signup(dto: SignupDto) {
+          
+    const exists = await this.prisma.user.findFirst({ where: { email: dto.email } });
     if (exists) throw new BadRequestException('You already registered. Please Login');
     const hash = await bcrypt.hash(dto.password, 10);
     const otp = this.generateOtp();

@@ -9,19 +9,19 @@ import { GetUser } from 'src/common/decorators/get-user.decorator';
 import { handleRequest } from 'src/common/utils/handle.request';
 
 @ApiTags("Bookings")
-@ApiBearerAuth("JWT-auth")
-@UseGuards(JwtAuthGuard)
 @Controller('bookings')
 export class BookingsController {
     constructor(private bookingsService: BookingsService, private config: ConfigService) { }
 
+    @ApiBearerAuth("JWT-auth")
+    @UseGuards(JwtAuthGuard)
     @Post()
     create(@GetUser('id') userId: string, @Body() dto: CreateBookingDto) {
         console.log(userId, dto)
-          return handleRequest(
-              () => this.bookingsService.createBooking(userId, dto),
-              'Added Bookingd successfully',
-            );
+        return handleRequest(
+            () => this.bookingsService.createBooking(userId, dto),
+            'Added Bookingd successfully',
+        );
     }
 
     // Stripe webhook - expects raw body; route registered in main.ts as raw.
