@@ -122,7 +122,6 @@ export class ChatService {
     if (message.senderId !== userId && message.receiverId !== userId) {
       throw new Error('You are not allowed to delete this message');
     }
-
     // delete the message
     await this.prisma.message.delete({
       where: { id: messageId },

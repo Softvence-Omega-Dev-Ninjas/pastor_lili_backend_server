@@ -7,11 +7,10 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   @WebSocketServer()
   server:Server;
   constructor(private chatService: ChatService) { }
-
   afterInit(server: Server) {
     console.log('✅ Chat WebSocket Gateway initialized');
   }
-
+  
   handleConnection(client: Socket) {
     const userId = client.handshake.query.userId as string;
     if (!userId) {

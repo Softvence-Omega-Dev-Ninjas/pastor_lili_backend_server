@@ -11,7 +11,6 @@ import { handleRequest } from "src/common/utils/handle.request";
 @Controller('chat')
 export class ChatController {
     constructor(private readonly chatService: ChatService) { }
-
     // Get all messages for a user (their entire history)
     @Get('history/user')
     @ApiOperation({ summary: "Get all messages for a user" })
@@ -22,18 +21,15 @@ export class ChatController {
             ' Get all messages for a user successfully',
         );
     }
-
     //  Get all messages between two users
     @Get('history/:userB')
     @ApiOperation({ summary: 'Get all messages between you and another users' })
-    // @ApiParam({ name: 'partnerId', description: 'User B ID' })
     async getMessagesBetweenUsers( @GetUser('id') userA:string, @Param('userB') userB: string) {
         return handleRequest(
             () => this.chatService.getMessagesBetweenUsers(userA, userB),
             'Get all messages between two users successfully',
         );
     }
-
     //  Get all chat partners for a user (unique users you have chatted with)
     @Get('partners')
     @ApiOperation({ summary: 'Get all chat partners for a user' })
@@ -43,7 +39,6 @@ export class ChatController {
             'Get all chat partners for a user successfully',
         );
     }
-
     // Delete A Message by Id..
     @Delete('removeMessage/:messageId')
     async removeMessage(@GetUser('id') userId: string, @Param('messageId') messageId: string) {
