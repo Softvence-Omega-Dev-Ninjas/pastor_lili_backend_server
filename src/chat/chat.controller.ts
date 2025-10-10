@@ -24,11 +24,10 @@ export class ChatController {
     }
 
     //  Get all messages between two users
-    @Get('history/:userA/:userB')
-    @ApiOperation({ summary: 'Get all messages between two users' })
-    @ApiParam({ name: 'userA', description: 'User A ID' })
-    @ApiParam({ name: 'userB', description: 'User B ID' })
-    async getMessagesBetweenUsers(@Param('userA') userA: string, @Param('userB') userB: string) {
+    @Get('history/:userB')
+    @ApiOperation({ summary: 'Get all messages between you and another users' })
+    // @ApiParam({ name: 'partnerId', description: 'User B ID' })
+    async getMessagesBetweenUsers( @GetUser('id') userA:string, @Param('userB') userB: string) {
         return handleRequest(
             () => this.chatService.getMessagesBetweenUsers(userA, userB),
             'Get all messages between two users successfully',
