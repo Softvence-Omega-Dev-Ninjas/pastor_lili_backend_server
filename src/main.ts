@@ -29,6 +29,7 @@ async function bootstrap() {
   app.use(cookieParser());
   app.use(json({ limit: '10mb' }));
   app.use(urlencoded({ extended: true }));
+  app.enableCors("http://localhost:3001");
 
   // Make raw body available for the Stripe webhook route
   const expressApp = app.getHttpAdapter().getInstance();
