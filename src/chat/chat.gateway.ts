@@ -2,15 +2,15 @@ import { WebSocketGateway, SubscribeMessage, MessageBody, ConnectedSocket, OnGat
 import { Socket, Server } from 'socket.io';
 import { ChatService } from './chat.service';
 
-@WebSocketGateway({cors: { origin: ["*", "http://localhost:3001"] } })
+@WebSocketGateway({ cors: { origin: ["*"], namespace: "/chat" } })
 export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer()
-  server:Server;
+  server: Server;
   constructor(private chatService: ChatService) { }
   afterInit(server: Server) {
     console.log('✅ Chat WebSocket Gateway initialized');
   }
-  
+
   handleConnection(client: Socket) {
     const userId = client.handshake.query.userId as string;
     if (!userId) {
@@ -30,14 +30,14 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 
   @SubscribeMessage('sendMessage')
   async handleMessage(
-    @MessageBody() data: {  senderId: string; reciverId: string; message: string },
+    @MessageBody() data: { senderId: string; reciverId: string; message: string },
     @ConnectedSocket() client: Socket) {
     const { senderId, reciverId, message } = data;
     // console.log(data)
     const saveMessage = await this.chatService.saveMessage({
-      senderId:senderId,
-      receiverId:reciverId,
-      content:message,
+      senderId: senderId,
+      receiverId: reciverId,
+      content: message,
     })
 
     this.server.to(reciverId).emit('receive_message', saveMessage);
