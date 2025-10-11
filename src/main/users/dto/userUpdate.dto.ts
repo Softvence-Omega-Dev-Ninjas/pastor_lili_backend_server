@@ -12,11 +12,26 @@ export class UpdateUserDto {
   fullName?: string;
 
   @ApiProperty({
-    description: 'Avatar URL of the user',
-    example: 'https://example.com/avatar.jpg',
-    required: false,
+    type: "string",
+    format: "binary",
+    description: "The file to upload",
   })
   @IsOptional()
-  @IsUrl()
-  avatar?: string;
+  file?: any; 
 }
+
+export const apiBodyExample = {
+  schema: {
+    type: "object",
+    properties: {
+      files: {
+        type: "array",
+        items: {
+          type: "string",
+          format: "binary",
+        },
+        maxItems: 20,
+      },
+    },
+  },
+};
