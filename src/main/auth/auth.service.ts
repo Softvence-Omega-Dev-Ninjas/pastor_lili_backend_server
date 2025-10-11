@@ -3,8 +3,8 @@ import { PrismaService } from '../prisma/prisma.service';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
-import { MailService } from 'src/mail/mail.service';
 import { SignupDto } from './dto/signup.dto';
+import { MailService } from '../mail/mail.service';
 
 @Injectable()
 export class AuthService {
@@ -43,7 +43,7 @@ export class AuthService {
     }
 
     const otp = this.generateOtp(); // 4-digit OTP
-    const otpExpiry = new Date(Date.now() + 10 * 60 * 1000); // 10 mins validity
+    const otpExpiry = new Date(Date.now() + 5 * 60 * 1000); // 10 mins validity
 
     await this.prisma.user.update({
       where: { email },
@@ -52,7 +52,7 @@ export class AuthService {
 
     await this.mail.sendOtp(email, otp, 'Email Verification OTP');
 
-    return { message: 'New OTP sent to your email.' };
+    return { message: 'OTP sent to your email.' };
   }
 
   // otp verify for email verify
@@ -78,7 +78,7 @@ export class AuthService {
     }
 
     const otp = this.generateOtp(); // 4-digit OTP
-    const otpExpiry = new Date(Date.now() + 10 * 60 * 1000); // 10 mins validity
+    const otpExpiry = new Date(Date.now() + 5 * 60 * 1000); // 10 mins validity
 
     await this.prisma.user.update({
       where: { email },
@@ -87,7 +87,7 @@ export class AuthService {
 
     await this.mail.forgetPassOtp(email, otp, 'Forget Password OTP');
 
-    return { message: 'New OTP sent to your email.' };
+    return { message: 'OTP sent to your email.' };
   }
 
    async forgetVerifyOtp(email: string, otp: string) {
