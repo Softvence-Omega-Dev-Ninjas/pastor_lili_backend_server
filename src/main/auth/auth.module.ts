@@ -6,9 +6,9 @@ import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { GoogleStrategy } from './strategies/google.strategy';
+import { PrismaModule } from 'src/lib/prisma/prisma.module';
+import { MailService } from 'src/lib/mail/mail.service';
 // import { FacebookStrategy } from './strategies/facebook.strategy';
-import { MailService } from '../mail/mail.service';
-import { PrismaModule } from '../prisma/prisma.module';
 
 @Module({
   imports: [

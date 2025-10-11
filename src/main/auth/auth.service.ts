@@ -1,10 +1,11 @@
 import { Injectable, UnauthorizedException, BadRequestException } from '@nestjs/common';
-import { PrismaService } from '../prisma/prisma.service';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { SignupDto } from './dto/signup.dto';
-import { MailService } from '../mail/mail.service';
+import { PrismaService } from 'src/lib/prisma/prisma.service';
+import { MailService } from 'src/lib/mail/mail.service';
+
 
 @Injectable()
 export class AuthService {
