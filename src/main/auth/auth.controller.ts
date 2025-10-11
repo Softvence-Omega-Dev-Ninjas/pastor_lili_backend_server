@@ -4,9 +4,6 @@ import { LoginDto } from './dto/login.dto';
 import { AuthService } from './auth.service';
 import { ResendOtpDto, VerifyOtpDto } from './dto/verifyOtp.dto';
 import { ForgetPasswordDto } from './dto/forgetPassword.dto';
-import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { JwtAuthGuard } from 'src/common/guards/jwt.guard';
-import { GetUser } from 'src/common/decorators/get-user.decorator';
 import { handleRequest } from 'src/common/utils/handle.request';
 
 
