@@ -1,10 +1,11 @@
-import { Controller, Get, Patch, Body, UseGuards, Req, Post } from '@nestjs/common';
+import { Controller, Get, Patch, Body, UseGuards, Req, Post, UseInterceptors, UploadedFile, ConflictException } from '@nestjs/common';
 import { UsersService } from './users.service';
-import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiBody, ApiConsumes, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { GetUser } from 'src/common/decorators/get-user.decorator';
 import { UpdateUserDto } from './dto/userUpdate.dto';
 import { JwtAuthGuard } from 'src/common/guards/jwt.guard';
 import { handleRequest } from 'src/common/utils/handle.request';
+import { FileInterceptor } from '@nestjs/platform-express';
 
 
 @ApiTags("Users")
@@ -24,8 +25,23 @@ export class UsersController {
   }
 
   // update profile 
+  @ApiOperation({summary: "Update user information"})
   @Patch('me')
-  async update(@GetUser('id') userId: string, @Body() dto: UpdateUserDto) {
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({type: UpdateUserDto, required: false})
+  @UseInterceptors(FileInterceptor('file')) //'image' is the name of the form field
+  async update(
+    @GetUser('id') userId: string,
+    @Body() dto: UpdateUserDto,
+    @UploadedFile() file?: Express.Multer.File,
+  ) {
+    
+    if(file){
+      const {secure_url}: any = await this.usersService.uploadImages(file);
+      if(!secure_url) throw new ConflictException('not found');
+      dto["avatar"]= secure_url;
+    }
+
     return handleRequest(
       () => this.usersService.updateProfile(userId, dto),
       "Update profile successfully",
