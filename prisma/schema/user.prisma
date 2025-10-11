@@ -1,0 +1,29 @@
+model User {
+  id           String           @id @default(uuid())
+  fullName     String
+  email        String           @unique
+  password     String?
+  googleId     String?          @unique
+  facebookId   String?          @unique
+  avatar       String?
+  otp          String?
+  otpExpiresAt DateTime?
+  verified     Boolean          @default(false)
+  role         Role             @default(USER)
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
+  bookings     Booking[]
+  reviews   Review[]
+  sentMessages Message[]        @relation("SentMessages")
+  recvMessages Message[]        @relation("ReceivedMessages")
+
+  // Relation to spaces (only for ADMIN or SUPERADMIN)
+  spaces       Space[]   // One-to-many relation
+}
+
+// user role
+enum Role {
+  USER
+  ADMIN
+  SUPERADMIN
+}
