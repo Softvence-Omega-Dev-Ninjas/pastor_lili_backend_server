@@ -4,6 +4,7 @@ import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { GetUser } from 'src/common/decorators/get-user.decorator';
 import { UpdateUserDto } from './dto/userUpdate.dto';
 import { JwtAuthGuard } from 'src/common/guards/jwt.guard';
+import { handleRequest } from 'src/common/utils/handle.request';
 
 
 @ApiTags("Users")
@@ -13,13 +14,21 @@ import { JwtAuthGuard } from 'src/common/guards/jwt.guard';
 export class UsersController {
   constructor(private usersService: UsersService) { }
 
+  // Get profile
   @Get('me')
-  me(@GetUser('id') userId: string) {
-    return this.usersService.findById(userId);
+  async me(@GetUser('id') userId: string) {
+    return handleRequest(
+      () => this.usersService.findById(userId),
+      "Get your information successfully",
+    );
   }
 
+  // update profile 
   @Patch('me')
-  update(@GetUser('id') userId: string, @Body() dto: UpdateUserDto) {
-    return this.usersService.updateProfile(userId, dto);
+  async update(@GetUser('id') userId: string, @Body() dto: UpdateUserDto) {
+    return handleRequest(
+      () => this.usersService.updateProfile(userId, dto),
+      "Update profile successfully",
+    );
   }
 }
