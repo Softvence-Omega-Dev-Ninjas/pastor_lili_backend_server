@@ -1,7 +1,7 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
-import { PrismaService } from '../prisma/prisma.service';
 import { CreateSpaceDto } from './dto/CreateSpace.dto';
 import { UpdateSpaceDto } from './dto/UpdateSpace.dto';
+import { PrismaService } from 'src/lib/prisma/prisma.service';
 
 @Injectable()
 export class SpacesService {

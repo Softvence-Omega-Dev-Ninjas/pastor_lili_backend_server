@@ -1,8 +1,8 @@
 import { Injectable, BadRequestException } from '@nestjs/common';
 import Stripe from 'stripe';
-import { PrismaService } from '../prisma/prisma.service';
 import { ConfigService } from '@nestjs/config';
 import { CreateBookingDto } from './dto/create-booking.dto';
+import { PrismaService } from 'src/lib/prisma/prisma.service';
 
 @Injectable()
 export class BookingsService {

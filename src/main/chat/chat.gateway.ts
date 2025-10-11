@@ -2,9 +2,9 @@ import { WebSocketGateway, SubscribeMessage, MessageBody, ConnectedSocket, OnGat
 import { Socket, Server } from 'socket.io';
 import { ChatService } from './chat.service';
 import { Injectable, Logger } from '@nestjs/common';
-import { PrismaService } from '../prisma/prisma.service';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
+import { PrismaService } from 'src/lib/prisma/prisma.service';
 
 @WebSocketGateway({
   cors: { origin: '*' },
@@ -27,7 +27,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   // -----------------
 
   afterInit(server: Server) {
-    console.log('✅ Chat WebSocket Gateway initialized');
+    console.log('Chat WebSocket Gateway initialized');
   }
 
   // -------------------
