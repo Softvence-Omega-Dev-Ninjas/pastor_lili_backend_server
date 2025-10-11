@@ -1,0 +1,23 @@
+model Booking {
+  id        String        @id @default(uuid())
+  userId    String
+  spaceId   String
+  startTime DateTime
+  endTime   DateTime
+  status    BookingStatus @default(PENDING)
+  paymentId String?
+  amount    Float
+  createdAt DateTime      @default(now())
+  user      User          @relation(fields: [userId], references: [id])
+  space     Space         @relation(fields: [spaceId], references: [id])
+
+  Payment Payment[]
+}
+// booking status
+enum BookingStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  COMPLETED
+}
+

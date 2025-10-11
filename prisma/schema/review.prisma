@@ -1,0 +1,10 @@
+model Review {
+  id        String   @id @default(uuid())
+  userId    String
+  spaceId   String
+  comment   String
+  rating    Float
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id])
+  space     Space    @relation(fields: [spaceId], references: [id])
+}

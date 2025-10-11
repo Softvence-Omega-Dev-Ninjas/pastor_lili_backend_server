@@ -1,0 +1,16 @@
+model Space {
+  id          String    @id @default(uuid())
+  title       String
+  description String
+  price       Float
+  capacity    Int?
+  images      String[]  @default([])
+  amenities   String[]  @default([])
+  createdAt   DateTime  @default(now())
+
+   // Relation to user
+  ownerId     String
+  owner       User      @relation(fields: [ownerId], references: [id])
+  bookings    Booking[]
+  reviews     Review[]
+}
