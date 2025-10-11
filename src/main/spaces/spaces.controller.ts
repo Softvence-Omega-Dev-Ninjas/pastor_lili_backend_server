@@ -1,14 +1,14 @@
 import { Controller, Get, Post, Body, Param, Patch, Delete, UseGuards } from '@nestjs/common';
 import { SpacesService } from './spaces.service';
-import { JwtAuthGuard } from '../common/guards/jwt.guard';
-import { Roles } from '../common/decorators/roles.decorator';
-import { RolesGuard } from '../common/guards/roles.guard';
 import { Reflector } from '@nestjs/core';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { GetUser } from 'src/common/decorators/get-user.decorator';
 import { CreateSpaceDto } from './dto/CreateSpace.dto';
 import { handleRequest } from 'src/common/utils/handle.request';
 import { UpdateSpaceDto } from './dto/UpdateSpace.dto';
+import { JwtAuthGuard } from 'src/common/guards/jwt.guard';
+import { RolesGuard } from 'src/common/guards/roles.guard';
+import { Roles } from 'src/common/decorators/roles.decorator';
 
 
 @ApiTags("Spaces")

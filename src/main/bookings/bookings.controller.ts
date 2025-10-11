@@ -1,12 +1,12 @@
 import { Controller, Post, Body, UseGuards, Req, Headers, Res, Patch, Param, Get } from '@nestjs/common';
 import { BookingsService } from './bookings.service';
-import { JwtAuthGuard } from '../common/guards/jwt.guard';
 import { CreateBookingDto } from './dto/create-booking.dto';
 import { ConfigService } from '@nestjs/config';
 import type { Response } from 'express';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { GetUser } from 'src/common/decorators/get-user.decorator';
 import { handleRequest } from 'src/common/utils/handle.request';
+import { JwtAuthGuard } from 'src/common/guards/jwt.guard';
 
 @ApiTags("Bookings")
 @Controller('bookings')
