@@ -37,11 +37,10 @@ export class UsersController {
   ) {
     
     if(file){
-      const {secure_url}: any = await this.usersService.uploadImages(file);
+      const {secure_url}: any = await this.usersService.uploadProfileImage(file);
       if(!secure_url) throw new ConflictException('not found');
-      dto["avatar"]= secure_url;
+      dto['avatar']= secure_url;
     }
-
     return handleRequest(
       () => this.usersService.updateProfile(userId, dto),
       "Update profile successfully",
