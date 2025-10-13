@@ -118,10 +118,6 @@ export class AuthService {
     return { message: 'OTP verified successfully' };
   }
 
-
-
-
-
   async login(dto: { email: string; password: string }) {
     const user = await this.prisma.user.findUnique({ where: { email: dto.email } });
     if (!user || !user.password) throw new UnauthorizedException('Invalid credentials');
