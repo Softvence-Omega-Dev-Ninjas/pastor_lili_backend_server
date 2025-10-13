@@ -5,6 +5,7 @@ import { ConfigService } from '@nestjs/config';
 import { SignupDto } from './dto/signup.dto';
 import { PrismaService } from 'src/lib/prisma/prisma.service';
 import { MailService } from 'src/lib/mail/mail.service';
+import { TwilioService } from 'src/lib/twilio/twilio.service';
 
 
 @Injectable()
@@ -13,6 +14,7 @@ export class AuthService {
     private prisma: PrismaService,
     private jwt: JwtService,
     private mail: MailService,
+    private twilio: TwilioService,
     private config: ConfigService
   ) { }
 
@@ -70,31 +72,45 @@ export class AuthService {
   }
 
   // forget password......
-  async forgetPasswordOtp(email: string) {
-    const user = await this.prisma.user.findUnique({ where: { email } });
-    if (!user) throw new BadRequestException('No user found with this email');
+   async forgetPasswordOtp(identifier: string) {
+    // identifier can be email or phone
+    const user = await this.prisma.user.findFirst({
+      where: {
+        OR: [
+          { email: identifier },
+          { phone: identifier },
+        ],
+      },
+    });
+    if (!user) throw new BadRequestException('No user found with this email or phone');
 
-    if (!user.verified) {
-      throw new BadRequestException('Your Email is not verified.');
-    }
-
-    const otp = this.generateOtp(); // 4-digit OTP
-    const otpExpiry = new Date(Date.now() + 5 * 60 * 1000); // 10 mins validity
+    const otp = this.generateOtp();
+    const otpExpiry = new Date(Date.now() + 5 * 60 * 1000);
 
     await this.prisma.user.update({
-      where: { email },
+      where: { id: user.id },
       data: { otp, otpExpiresAt: otpExpiry },
     });
 
-    await this.mail.forgetPassOtp(email, otp, 'Forget Password OTP');
-
-    return { message: 'OTP sent to your email.' };
+    if (identifier.includes('@')) {
+      await this.mail.forgetPassOtp(identifier, otp, 'Forget Password OTP');
+      return { message: 'OTP sent to your email.' };
+    } else {
+      await this.twilio.sendOtp(identifier, otp);
+      return { message: 'OTP sent to your phone.' };
+    }
   }
-
-   async forgetVerifyOtp(email: string, otp: string) {
-    const user = await this.prisma.user.findUnique({ where: { email } });
+// forget verify otp 
+  async forgetVerifyOtp(identifier: string, otp: string) {
+    const user = await this.prisma.user.findFirst({
+      where: {
+        OR: [
+          { email: identifier },
+          { phone: identifier },
+        ],
+      },
+    });
     if (!user) throw new BadRequestException('No user found');
-
     if (!user.otp || user.otp !== otp || !user.otpExpiresAt || user.otpExpiresAt < new Date()) {
       throw new UnauthorizedException('Invalid or expired OTP');
     }
@@ -104,12 +120,14 @@ export class AuthService {
 
 
 
+
+
   async login(dto: { email: string; password: string }) {
     const user = await this.prisma.user.findUnique({ where: { email: dto.email } });
     if (!user || !user.password) throw new UnauthorizedException('Invalid credentials');
     const ok = await bcrypt.compare(dto.password, user.password);
     if (!ok) throw new UnauthorizedException('Invalid credentials');
-    return this.getTokens(user.id, user.email, user.role);
+    return this.getTokens(user.id, user.email ?? '', user.role);
   }
 
   async getTokens(userId: string, email: string, role: string) {
@@ -160,6 +178,6 @@ export class AuthService {
       if (profile.provider === 'facebook' && !user.facebookId) updateData.facebookId = profile.id;
       if (Object.keys(updateData).length) await this.prisma.user.update({ where: { id: user.id }, data: updateData });
     }
-    return this.getTokens(user.id, user.email, user.role);
+    return this.getTokens(user.id, user.email ?? '', user.role);
   }
 }

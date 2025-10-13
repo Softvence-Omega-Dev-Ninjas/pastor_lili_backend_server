@@ -8,12 +8,14 @@ import { JwtStrategy } from './strategies/jwt.strategy';
 import { GoogleStrategy } from './strategies/google.strategy';
 import { PrismaModule } from 'src/lib/prisma/prisma.module';
 import { MailService } from 'src/lib/mail/mail.service';
+import { TwilioModule } from 'src/lib/twilio/twilio.module';
 // import { FacebookStrategy } from './strategies/facebook.strategy';
 
 @Module({
   imports: [
     PrismaModule,
     PassportModule,
+    TwilioModule,
     ConfigModule,
     JwtModule.registerAsync({
       imports: [ConfigModule],
