@@ -5,6 +5,7 @@ import { AuthService } from './auth.service';
 import { ResendOtpDto, VerifyOtpDto } from './dto/verifyOtp.dto';
 import { ForgetPasswordDto, ResetPasswordDto } from './dto/forgetPassword.dto';
 import { handleRequest } from 'src/common/utils/handle.request';
+import { AuthGuard } from '@nestjs/passport';
 
 
 @Controller('auth')
@@ -44,7 +45,7 @@ export class AuthController {
     return this.authService.forgetPasswordOtp(dto.identifier);
   }
   // forget password send otp verify..
- @Post('forget-password/verify')
+  @Post('forget-password/verify')
   async verifyForgetOtp(@Body() dto: VerifyOtpDto) {
     return this.authService.forgetVerifyOtp(dto.identifier, dto.otp);
   }
@@ -63,4 +64,19 @@ export class AuthController {
 
 
   // OAuth entry points will typically be frontend handled. Provide callback endpoints if needed.
+  @Get('google')
+  @UseGuards(AuthGuard('google'))
+  async googleLogin() {
+  }
+
+  @Get('google/callback')
+  @UseGuards(AuthGuard('google'))
+  async googleCallback(@Req() req) {
+    // redirect with tokens
+    const tokens = req.user;
+    return {
+      message: 'Login successful',
+      tokens,
+    };
+  }
 }
