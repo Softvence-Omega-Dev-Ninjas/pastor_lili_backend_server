@@ -26,12 +26,12 @@ export class CreateBookingDto {
   @IsDateString()
   endTime: Date;
 
-  @ApiProperty({
-    example: 250.0,
-    description: 'Total amount for this booking',
-  })
-  @IsNotEmpty()
-  @IsNumber()
-  amount: number;
+  // @ApiProperty({
+  //   example: 250.0,
+  //   description: 'Total amount for this booking',
+  // })
+  // @IsNotEmpty()
+  // @IsNumber()
+  // amount: number;
 }
 
