@@ -7,6 +7,7 @@ import { BookingsModule } from './main/bookings/bookings.module';
 import { ChatModule } from './main/chat/chat.module';
 import { PrismaModule } from './lib/prisma/prisma.module';
 import { CloudinaryModule } from './lib/cloudinary/cloudinary.module';
+import { ReviewsModule } from './main/review/review.module';
 
 
 @Module({
@@ -18,7 +19,8 @@ import { CloudinaryModule } from './lib/cloudinary/cloudinary.module';
     SpacesModule,
     BookingsModule,
     ChatModule,
-    CloudinaryModule
+    CloudinaryModule,
+    ReviewsModule
   ]
 })
 export class AppModule {}
