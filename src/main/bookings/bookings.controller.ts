@@ -3,10 +3,11 @@ import { BookingsService } from './bookings.service';
 import { CreateBookingDto } from './dto/create-booking.dto';
 import { ConfigService } from '@nestjs/config';
 import type { Response } from 'express';
-import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { GetUser } from 'src/common/decorators/get-user.decorator';
 import { handleRequest } from 'src/common/utils/handle.request';
 import { JwtAuthGuard } from 'src/common/guards/jwt.guard';
+import { Roles } from 'src/common/decorators/roles.decorator';
 
 @ApiTags("Bookings")
 @Controller('bookings')
@@ -20,7 +21,7 @@ export class BookingsController {
         console.log(userId, dto)
         return handleRequest(
             () => this.bookingsService.createBooking(userId, dto),
-            'Added Bookingd successfully',
+            'Booking Created successfully',
         );
     }
 
@@ -37,14 +38,19 @@ export class BookingsController {
     }
 
     // admin confirm (protect with role guard in route in real project)
+    @ApiOperation({summary: "Protected Route For (ADMIN)"})
+    @ApiBearerAuth("JWT-auth")
+    @UseGuards(JwtAuthGuard)
+    @Roles('ADMIN', 'SUPERADMIN')
     @Patch(':id/confirm')
     adminConfirm(@Param('id') id: string, @Body('approve') approve: boolean) {
         return this.bookingsService.adminConfirm(id, approve);
     }
 
+    @ApiBearerAuth("JWT-auth")
     @UseGuards(JwtAuthGuard)
-    @Get('me')
-    myBookings(@Req() req: any) {
-        return this.bookingsService.listForUser(req.user.sub);
+    @Get('me/')
+    myBookings(@GetUser('id') userId:string) {
+        return this.bookingsService.listForUser(userId);
     }
 }
