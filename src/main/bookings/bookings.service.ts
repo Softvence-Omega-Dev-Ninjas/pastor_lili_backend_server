@@ -18,8 +18,7 @@ export class BookingsService {
             apiVersion: '2025-09-30.clover', // <- updated version
         });
     }
-
-
+    // create booking
     async createBooking(userId: string, dto: CreateBookingDto) {
         // check overlap simple
         const overlap = await this.prisma.booking.findFirst({
@@ -129,7 +128,7 @@ export class BookingsService {
         const status = approve ? 'APPROVED' : 'REJECTED';
         return this.prisma.booking.update({ where: { id: bookingId }, data: { status } });
     }
-    
+
     // TODO -------upcoming, past , complete
     // users booking list
     async listForUser(userId: string) {
