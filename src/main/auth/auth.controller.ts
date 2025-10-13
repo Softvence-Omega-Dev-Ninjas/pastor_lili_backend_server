@@ -3,7 +3,7 @@ import { SignupDto } from './dto/signup.dto';
 import { LoginDto } from './dto/login.dto';
 import { AuthService } from './auth.service';
 import { ResendOtpDto, VerifyOtpDto } from './dto/verifyOtp.dto';
-import { ForgetPasswordDto } from './dto/forgetPassword.dto';
+import { ForgetPasswordDto, ResetPasswordDto } from './dto/forgetPassword.dto';
 import { handleRequest } from 'src/common/utils/handle.request';
 
 
@@ -35,18 +35,18 @@ export class AuthController {
   // otp verification for email verified 
   @Post('verify-otp')
   verifyOtp(@Body() body: VerifyOtpDto) {
-    return this.authService.verifyOtp(body.email, body.otp);
+    return this.authService.verifyOtp(body.identifier, body.otp);
   }
 
   // forget password send otp
-  @Post('forgetPassword-otp')
-  forgetPasswordOtp(@Body() body: ResendOtpDto) {
-    return this.authService.forgetPasswordOtp(body.email)
+  @Post('forget-password/otp')
+  async sendForgetOtp(@Body() dto: ForgetPasswordDto) {
+    return this.authService.forgetPasswordOtp(dto.identifier);
   }
   // forget password send otp verify..
-  @Post('verify-forget-otp')
-  forgetVerifyOtp(@Body() body: VerifyOtpDto) {
-    return this.authService.forgetVerifyOtp(body.email, body.otp);
+ @Post('forget-password/verify')
+  async verifyForgetOtp(@Body() dto: VerifyOtpDto) {
+    return this.authService.forgetVerifyOtp(dto.identifier, dto.otp);
   }
 
 
@@ -57,8 +57,8 @@ export class AuthController {
 
 
   @Post('forget-password')
-  reset(@Body() dto: ForgetPasswordDto) {
-    return this.authService.resetPassword(dto.email, dto.newPassword);
+  reset(@Body() dto: ResetPasswordDto) {
+    return this.authService.resetPassword(dto.identifier, dto.newPassword);
   }
 
 
