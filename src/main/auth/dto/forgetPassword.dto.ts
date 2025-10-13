@@ -8,7 +8,6 @@ export class ForgetPasswordDto {
   identifier: string; // email or phone
 }
 
-
 export class ResetPasswordDto {
   @ApiProperty({ example: 'john@gmail.com or 14386196448' })
   @IsNotEmpty()

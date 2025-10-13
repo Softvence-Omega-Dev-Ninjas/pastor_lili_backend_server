@@ -1,7 +1,7 @@
 import { Controller, Get, Post, Body, Param, Patch, Delete, UseGuards } from '@nestjs/common';
 import { SpacesService } from './spaces.service';
 import { Reflector } from '@nestjs/core';
-import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { GetUser } from 'src/common/decorators/get-user.decorator';
 import { CreateSpaceDto } from './dto/CreateSpace.dto';
 import { handleRequest } from 'src/common/utils/handle.request';
@@ -20,6 +20,7 @@ export class SpacesController {
 
   // create new space only create admin and superAdmin.
   // Admin routes (create/update/delete)
+  @ApiOperation({ summary: "Protected Route For (ADMIN)" })
   @Roles('ADMIN', 'SUPERADMIN')
   @Post("/")
   create(@Body() dto: CreateSpaceDto, @GetUser('id') userId: string) {
@@ -28,6 +29,7 @@ export class SpacesController {
       'Space created successfully',
     );
   }
+
 
   @Get("/")
   list(@GetUser('id') userId: string) {
@@ -43,6 +45,7 @@ export class SpacesController {
     );
   }
 
+  @ApiOperation({ summary: "Protected Route For (ADMIN)" })
   @Roles('ADMIN', 'SUPERADMIN')
   @Patch(':id')
   update(@GetUser('id') userId: string, @Param('id') id: string, @Body() dto: UpdateSpaceDto) {
@@ -52,6 +55,7 @@ export class SpacesController {
     );
   }
 
+  @ApiOperation({ summary: "Protected Route For (ADMIN)" })
   @Roles('ADMIN', 'SUPERADMIN')
   @Delete(':id')
   delete(@GetUser('id') userId: string, @Param('id') id: string) {
