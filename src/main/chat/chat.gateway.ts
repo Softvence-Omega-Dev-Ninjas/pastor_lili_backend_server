@@ -12,6 +12,7 @@ import { PrismaService } from 'src/lib/prisma/prisma.service';
 })
 @Injectable()
 export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
+  [x: string]: any;
   @WebSocketServer()
   server: Server;
   private logger = new Logger('ChatGateway');
@@ -100,9 +101,9 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
       return null;
     }
   }
-// ----------------------
-// Disconnect with error function
-// ----------------------
+  // ----------------------
+  // Disconnect with error function
+  // ----------------------
   private disconnectWithError(client: Socket, message: string) {
     this.logger.warn(`disconnecting client: ${message}`);
     client.emit('error', { message });
@@ -115,16 +116,23 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 
   @SubscribeMessage('sendMessage')
   async handleMessage(
-    @MessageBody() data: { senderId: string; reciverId: string; message: string },
+    @MessageBody() data: { senderId: string; receiverId: string; content: string, imageUrl?: string },
     @ConnectedSocket() client: Socket) {
-    const { senderId, reciverId, message } = data;
+    const { senderId, receiverId, content, imageUrl } = data;
+
+    if (!senderId || !receiverId) {
+      client.emit('error', { message: 'senderId and receiverId are required' });
+      return;
+    }
     const saveMessage = await this.chatService.saveMessage({
       senderId: senderId,
-      receiverId: reciverId,
-      content: message,
+      receiverId: receiverId,
+      content: content,
+      imageUrl
     })
+    
     // Send to both sender and receiver in real-time.
-    this.server.to(reciverId).emit('receive_message', saveMessage);
+    this.server.to(receiverId).emit('receive_message', saveMessage);
     this.server.to(senderId).emit('receive_message', saveMessage)
   }
 

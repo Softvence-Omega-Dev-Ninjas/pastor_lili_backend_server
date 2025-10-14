@@ -10,7 +10,9 @@ export class ChatService {
     senderId: string;
     receiverId: string;
     content: string;
+    imageUrl?: string; // optional
   }) {
+   
     const senderExists = await this.prisma.user.findFirst({
       where: { id: data.senderId },
     })
@@ -27,10 +29,12 @@ export class ChatService {
         senderId: data.senderId,
         receiverId: data.receiverId,
         content: data.content,
+        imageUrl: data.imageUrl,
       },
-
     })
+    return res
   }
+
 
   // Get All messages that involve a user
   async getMessagesByUser(userId: string) {
@@ -43,7 +47,7 @@ export class ChatService {
       },
       orderBy: { createdAt: 'asc' },
     });
-    return messages || [];
+    return messages
   }
 
   //  Get all messages between two users

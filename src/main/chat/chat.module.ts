@@ -4,12 +4,15 @@ import { ChatService } from './chat.service';
 import { ConfigModule } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
 import { PrismaService } from 'src/lib/prisma/prisma.service';
+import { ChatController } from './chat.controller';
+
 
 @Module({
   imports: [
     ConfigModule,
-    JwtModule.register({})
+    JwtModule.register({}),
   ],
+  controllers:[ChatController],
   providers: [ChatGateway, ChatService, PrismaService],
   exports:[ChatGateway]
 })
