@@ -3,11 +3,13 @@ import { BookingsService } from './bookings.service';
 import { CreateBookingDto } from './dto/create-booking.dto';
 import { ConfigService } from '@nestjs/config';
 import type { Response } from 'express';
-import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { GetUser } from 'src/common/decorators/get-user.decorator';
 import { handleRequest } from 'src/common/utils/handle.request';
 import { JwtAuthGuard } from 'src/common/guards/jwt.guard';
 import { Roles } from 'src/common/decorators/roles.decorator';
+import { RolesGuard } from 'src/common/guards/roles.guard';
+import { ApproveBookingDto } from './dto/approve.booking.dto';
 
 @ApiTags("Bookings")
 @Controller('bookings')
@@ -18,7 +20,6 @@ export class BookingsController {
     @UseGuards(JwtAuthGuard)
     @Post()
     create(@GetUser('id') userId: string, @Body() dto: CreateBookingDto) {
-        console.log(userId, dto)
         return handleRequest(
             () => this.bookingsService.createBooking(userId, dto),
             'Booking Created successfully',
@@ -38,19 +39,26 @@ export class BookingsController {
     }
 
     // admin confirm (protect with role guard in route in real project)
-    @ApiOperation({summary: "Protected Route For (ADMIN)"})
+    @ApiOperation({ summary: "Protected Route For (ADMIN)" })
     @ApiBearerAuth("JWT-auth")
-    @UseGuards(JwtAuthGuard)
+    @UseGuards(JwtAuthGuard, RolesGuard)
     @Roles('ADMIN', 'SUPERADMIN')
     @Patch(':id/confirm')
-    adminConfirm(@Param('id') id: string, @Body('approve') approve: boolean) {
-        return this.bookingsService.adminConfirm(id, approve);
+    adminConfirm(@Param('id') id: string, @Body() dto: ApproveBookingDto) {
+        console.log(dto.approve)
+        return this.bookingsService.adminConfirm(id, dto.approve);
     }
 
+    // Booking list By Status category
     @ApiBearerAuth("JWT-auth")
     @UseGuards(JwtAuthGuard)
-    @Get('me/')
-    myBookings(@GetUser('id') userId:string) {
-        return this.bookingsService.listForUser(userId);
+    @Get('my-bookings')
+    @ApiOperation({ summary: 'Get user bookings grouped as upcoming, completed, and pending' })
+    @ApiResponse({ status: 200, description: 'Returns categorized bookings for the user.' })
+    async getMyBookings(@GetUser('id') userId: string) {
+        return handleRequest(
+            () => this.bookingsService.getBookingsByCategory(userId),
+            'Get Booking successfully',
+        );
     }
 }

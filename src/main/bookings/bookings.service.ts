@@ -3,9 +3,7 @@ import Stripe from 'stripe';
 import { ConfigService } from '@nestjs/config';
 import { CreateBookingDto } from './dto/create-booking.dto';
 import { PrismaService } from 'src/lib/prisma/prisma.service';
-import { ApiBearerAuth } from '@nestjs/swagger';
-import { JwtAuthGuard } from 'src/common/guards/jwt.guard';
-import { RolesGuard } from 'src/common/guards/roles.guard';
+import { BookingStatus } from '@prisma/client';
 
 @Injectable()
 export class BookingsService {
@@ -129,9 +127,63 @@ export class BookingsService {
         return this.prisma.booking.update({ where: { id: bookingId }, data: { status } });
     }
 
-    // TODO -------upcoming, past , complete
+    // DONE -------upcoming, past , complete
     // users booking list
-    async listForUser(userId: string) {
-        return this.prisma.booking.findMany({ where: { userId }, include: { space: true } });
+    async getBookingsByCategory(userId: string) {
+        const user = await this.prisma.user.findFirst({ where: { id: userId } })
+        if (!user) {
+            throw new NotFoundException('User is Not Found.')
+        }
+        const now = new Date();
+
+        const [upcoming, completed, pending] = await Promise.all([
+            // UPCOMING BOOKINGS
+            this.prisma.booking.findMany({
+                where: {
+                    userId,
+                    status: BookingStatus.APPROVED,
+                    startTime: { gt: now },
+                },
+                include: {
+                    space: true,
+                    Payment: true,
+                },
+                orderBy: { startTime: 'asc' },
+            }),
+
+            // COMPLETED BOOKINGS
+            this.prisma.booking.findMany({
+                where: {
+                    userId,
+                    OR: [
+                        { status: BookingStatus.COMPLETED },
+                        {
+                            status: BookingStatus.APPROVED,
+                            endTime: { lt: now },
+                        },
+                    ],
+                },
+                include: {
+                    space: true,
+                    Payment: true,
+                },
+                orderBy: { endTime: 'desc' },
+            }),
+
+            // PENDING BOOKINGS
+            this.prisma.booking.findMany({
+                where: {
+                    userId,
+                    status: BookingStatus.PENDING,
+                },
+                include: {
+                    space: true,
+                    Payment: true,
+                },
+                orderBy: { createdAt: 'desc' },
+            }),
+        ]);
+
+        return { upcoming, completed, pending };
     }
 }
