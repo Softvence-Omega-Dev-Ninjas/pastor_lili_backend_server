@@ -1,54 +1,40 @@
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { ApiProperty } from '@nestjs/swagger';
 import { IsArray, IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator';
 
 export class CreateSpaceDto {
-  @ApiProperty({ 
-    example: 'Cozy Beach Apartment', 
-    description: 'Title of the space' 
-  })
-  @IsNotEmpty()
+  @ApiProperty({ example: 'Modern City Apartment' })
   @IsString()
+  @IsNotEmpty()
   title: string;
 
-  @ApiProperty({ 
-    example: 'A cozy apartment near the beach with sea view', 
-    description: 'Description of the space'
-  })
-  @IsNotEmpty()
+  @ApiProperty({ example: 'Beautiful apartment with city view' })
   @IsString()
+  @IsNotEmpty()
   description: string;
 
-  @ApiProperty({ 
-    example: 120.5, 
-    description: 'Price per night for the space' 
-  })
+  @ApiProperty({ example: 150 })
   @IsNotEmpty()
-  @IsNumber()
-  price: number;
+  price: number | string; //  can come as string from form-data
 
-  @ApiPropertyOptional({ 
-    example: 4, 
-    description: 'Capacity of the space (optional)' 
-  })
+  @ApiProperty({ example: 4 })
   @IsOptional()
-  @IsNumber()
-  capacity?: number;
+  capacity?: number | string; //  same reason
 
-  @ApiPropertyOptional({ 
-    example: ['image1.jpg', 'image2.jpg'], 
-    description: 'Images of the space' 
+  @ApiProperty({
+    example: ['WiFi', 'Parking'],
+    description: 'List of amenities, or comma-separated string',
   })
   @IsOptional()
   @IsArray()
   @IsString({ each: true })
-  images?: string[];
+  amenities?: string[] | string; //  allow string for form-data
 
-  @ApiPropertyOptional({ 
-    example: ['WiFi', 'Parking', 'Air Conditioning'], 
-    description: 'Amenities provided in the space' 
+  @ApiProperty({
+    type: 'array',
+    items: { type: 'string', format: 'binary' },
+    required: false,
+    description: 'Upload images (1–5 files)',
   })
   @IsOptional()
-  @IsArray()
-  @IsString({ each: true })
-  amenities?: string[];
+  files?: any[];
 }
