@@ -1,7 +1,7 @@
-import { Controller, Get, Post, Body, Param, Patch, Delete, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Patch, Delete, UseGuards, UseInterceptors, UploadedFiles } from '@nestjs/common';
 import { SpacesService } from './spaces.service';
 import { Reflector } from '@nestjs/core';
-import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiConsumes, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { GetUser } from 'src/common/decorators/get-user.decorator';
 import { CreateSpaceDto } from './dto/CreateSpace.dto';
 import { handleRequest } from 'src/common/utils/handle.request';
@@ -9,6 +9,7 @@ import { UpdateSpaceDto } from './dto/UpdateSpace.dto';
 import { JwtAuthGuard } from 'src/common/guards/jwt.guard';
 import { RolesGuard } from 'src/common/guards/roles.guard';
 import { Roles } from 'src/common/decorators/roles.decorator';
+import { FilesInterceptor } from '@nestjs/platform-express';
 
 
 @ApiTags("Spaces")
@@ -23,9 +24,15 @@ export class SpacesController {
   @ApiOperation({ summary: "Protected Route For (ADMIN)" })
   @Roles('ADMIN', 'SUPERADMIN')
   @Post("/")
-  create(@Body() dto: CreateSpaceDto, @GetUser('id') userId: string) {
+  @UseInterceptors(FilesInterceptor('files', 5)) // <-- multiple files
+  @ApiConsumes('multipart/form-data')
+  create(
+    @Body() dto: CreateSpaceDto,
+    @UploadedFiles() files: Express.Multer.File[],
+    @GetUser('id') userId: string
+  ) {
     return handleRequest(
-      () => this.spacesService.create(userId, dto),
+      () => this.spacesService.create(userId, dto, files),
       'Space created successfully',
     );
   }
@@ -45,12 +52,19 @@ export class SpacesController {
     );
   }
 
-  @ApiOperation({ summary: "Protected Route For (ADMIN)" })
+  @ApiOperation({ summary: 'Protected Route For (ADMIN)' })
   @Roles('ADMIN', 'SUPERADMIN')
   @Patch(':id')
-  update(@GetUser('id') userId: string, @Param('id') id: string, @Body() dto: UpdateSpaceDto) {
+  @UseInterceptors(FilesInterceptor('files', 5)) // allow up to 5 new images
+  @ApiConsumes('multipart/form-data')
+  update(
+    @GetUser('id') userId: string,
+    @Param('id') id: string,
+    @Body() dto: UpdateSpaceDto,
+    @UploadedFiles() files: Express.Multer.File[],
+  ) {
     return handleRequest(
-      () => this.spacesService.update(userId, id, dto),
+      () => this.spacesService.update(userId, id, dto, files),
       'Space updated successfully',
     );
   }

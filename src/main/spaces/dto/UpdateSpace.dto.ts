@@ -1,36 +1,34 @@
-import { ApiPropertyOptional } from '@nestjs/swagger';
-import { IsArray, IsNumber, IsOptional, IsString } from 'class-validator';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { IsArray, IsOptional, IsString } from 'class-validator';
 
 export class UpdateSpaceDto {
-  @ApiPropertyOptional({ example: 'Modern City Apartment', description: 'Title of the space' })
-  @IsOptional()
-  @IsString()
+  @ApiPropertyOptional()
   title?: string;
 
-  @ApiPropertyOptional({ example: 'Spacious apartment near downtown', description: 'Description of the space' })
-  @IsOptional()
-  @IsString()
+  @ApiPropertyOptional()
   description?: string;
 
-  @ApiPropertyOptional({ example: 150.0, description: 'Updated price per night' })
-  @IsOptional()
-  @IsNumber()
-  price?: number;
+   @ApiProperty({ example: 5 })
+  price?: number | string;
 
-  @ApiPropertyOptional({ example: 3, description: 'Updated capacity of the space' })
-  @IsOptional()
-  @IsNumber()
-  capacity?: number;
+  @ApiProperty({ example: 4 })
+  capacity?: number | string;
 
-  @ApiPropertyOptional({ example: ['image1.jpg', 'image2.jpg'], description: 'Updated images for the space' })
+  @ApiProperty({
+    example: ['WiFi', 'Parking'],
+    description: 'List of amenities, or comma-separated string',
+  })
   @IsOptional()
   @IsArray()
   @IsString({ each: true })
-  images?: string[];
+  amenities?: string[] | string;
 
-  @ApiPropertyOptional({ example: ['WiFi', 'TV'], description: 'Updated list of amenities' })
-  @IsOptional()
-  @IsArray()
-  @IsString({ each: true })
-  amenities?: string[];
+ @ApiProperty({
+     type: 'array',
+     items: { type: 'string', format: 'binary' },
+     required: false,
+     description: 'Upload images (1–5 files)',
+   })
+   @IsOptional()
+   files?: any[];
 }
