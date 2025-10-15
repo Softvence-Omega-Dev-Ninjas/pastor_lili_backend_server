@@ -23,7 +23,7 @@ export class AuthService {
   }
   // create new user...
   async signup(dto: SignupDto) {
-          
+
     const exists = await this.prisma.user.findFirst({ where: { email: dto.email } });
     if (exists) throw new BadRequestException('You already registered. Please Login');
     const hash = await bcrypt.hash(dto.password, 10);
@@ -59,7 +59,6 @@ export class AuthService {
   }
 
   // otp verify for email verify
-
   async verifyOtp(email: string, otp: string) {
     const user = await this.prisma.user.findUnique({ where: { email } });
     if (!user) throw new UnauthorizedException('No user');
@@ -72,7 +71,7 @@ export class AuthService {
   }
 
   // forget password......
-   async forgetPasswordOtp(identifier: string) {
+  async forgetPasswordOtp(identifier: string) {
     // identifier can be email or phone
     const user = await this.prisma.user.findFirst({
       where: {
@@ -100,7 +99,7 @@ export class AuthService {
       return { message: 'OTP sent to your phone.' };
     }
   }
-// forget verify otp 
+  // forget verify otp 
   async forgetVerifyOtp(identifier: string, otp: string) {
     const user = await this.prisma.user.findFirst({
       where: {
@@ -117,7 +116,7 @@ export class AuthService {
 
     return { message: 'OTP verified successfully' };
   }
-
+  // user login 
   async login(dto: { email: string; password: string }) {
     const user = await this.prisma.user.findUnique({ where: { email: dto.email } });
     if (!user || !user.password) throw new UnauthorizedException('Invalid credentials');
@@ -125,7 +124,7 @@ export class AuthService {
     if (!ok) throw new UnauthorizedException('Invalid credentials');
     return this.getTokens(user.id, user.email ?? '', user.role);
   }
-
+  // get token
   async getTokens(userId: string, email: string, role: string) {
     const user = await this.prisma.user.findUnique({ where: { id: userId } });
     const payload = { sub: userId, email, role };
@@ -143,7 +142,7 @@ export class AuthService {
   //   }
   // }
 
-
+  // reset password...
   async resetPassword(email: string, newPassword: string) {
     const user = await this.prisma.user.findUnique({ where: { email } });
     if (!user) throw new BadRequestException('No user');
