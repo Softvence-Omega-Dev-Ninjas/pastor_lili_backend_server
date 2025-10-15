@@ -36,6 +36,15 @@ export class AuthService {
     // await this.mail.sendOtp(dto.email, otp);
     // return { message: 'User created. OTP sent to email.' };
   }
+ // user login 
+  async login(dto: { email: string; password: string }) {
+    const user = await this.prisma.user.findUnique({ where: { email: dto.email } });
+    if (!user || !user.password) throw new UnauthorizedException('Invalid credentials');
+    const ok = await bcrypt.compare(dto.password, user.password);
+    if (!ok) throw new UnauthorizedException('Invalid credentials');
+    return this.getTokens(user.id, user.email ?? '', user.role);
+  }
+
   // send otp for email verifications.
   async resendOtp(email: string) {
     const user = await this.prisma.user.findUnique({ where: { email } });
@@ -116,14 +125,7 @@ export class AuthService {
 
     return { message: 'OTP verified successfully' };
   }
-  // user login 
-  async login(dto: { email: string; password: string }) {
-    const user = await this.prisma.user.findUnique({ where: { email: dto.email } });
-    if (!user || !user.password) throw new UnauthorizedException('Invalid credentials');
-    const ok = await bcrypt.compare(dto.password, user.password);
-    if (!ok) throw new UnauthorizedException('Invalid credentials');
-    return this.getTokens(user.id, user.email ?? '', user.role);
-  }
+ 
   // get token
   async getTokens(userId: string, email: string, role: string) {
     const user = await this.prisma.user.findUnique({ where: { id: userId } });
