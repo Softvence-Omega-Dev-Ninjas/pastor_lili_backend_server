@@ -10,7 +10,7 @@ model Space {
 
    // Relation to user
   ownerId     String
-  owner       User      @relation(fields: [ownerId], references: [id])
+  owner       User      @relation(fields: [ownerId], references: [id], onDelete: Cascade)
   bookings    Booking[]
   reviews     Review[]
 }

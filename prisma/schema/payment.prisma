@@ -6,5 +6,5 @@ model Payment {
   currency        String   @default("usd")
   status          String
   createdAt       DateTime @default(now())
-  booking         Booking? @relation(fields: [bookingId], references: [id])
+  booking         Booking? @relation(fields: [bookingId], references: [id], onDelete: Cascade)
 }

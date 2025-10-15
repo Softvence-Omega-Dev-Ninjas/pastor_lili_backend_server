@@ -5,6 +5,6 @@ model Review {
   comment   String? 
   rating    Float
   createdAt DateTime @default(now())
-  user      User     @relation(fields: [userId], references: [id])
-  space     Space    @relation(fields: [spaceId], references: [id])
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  space     Space    @relation(fields: [spaceId], references: [id], onDelete: Cascade)
 }
