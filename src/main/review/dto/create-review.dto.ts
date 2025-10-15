@@ -3,7 +3,7 @@ import { IsInt, IsNotEmpty, IsOptional, IsString, Min, Max } from 'class-validat
 
 export class CreateReviewDto {
   @ApiProperty({
-    example: 'uuid-of-space',
+    example: '7d9f2a1b-e0f5-4a34-bc7a-42d0d9d887f4',
     description: 'ID of the space being reviewed',
   })
   @IsNotEmpty()
