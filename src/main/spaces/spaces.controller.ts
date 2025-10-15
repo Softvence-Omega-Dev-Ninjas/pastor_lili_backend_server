@@ -13,7 +13,7 @@ import { FilesInterceptor } from '@nestjs/platform-express';
 
 
 @ApiTags("Spaces")
-@ApiBearerAuth("JWT-auth")
+ @ApiBearerAuth("JWT-auth")
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('spaces')
 export class SpacesController {
@@ -21,6 +21,7 @@ export class SpacesController {
 
   // create new space only create admin and superAdmin.
   // Admin routes (create/update/delete)
+
   @ApiOperation({ summary: "Protected Route For (ADMIN)" })
   @Roles('ADMIN', 'SUPERADMIN')
   @Post("/")
@@ -52,6 +53,7 @@ export class SpacesController {
     );
   }
 
+ 
   @ApiOperation({ summary: 'Protected Route For (ADMIN)' })
   @Roles('ADMIN', 'SUPERADMIN')
   @Patch(':id')
@@ -68,6 +70,7 @@ export class SpacesController {
       'Space updated successfully',
     );
   }
+
 
   @ApiOperation({ summary: "Protected Route For (ADMIN)" })
   @Roles('ADMIN', 'SUPERADMIN')

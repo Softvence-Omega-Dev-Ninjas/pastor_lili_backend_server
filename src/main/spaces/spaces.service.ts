@@ -11,14 +11,15 @@ export class SpacesService {
     private prisma: PrismaService,
     private readonly cloudinary: CloudinaryService,
   ) { }
-   // -------------------- CREATE SPACE --------------------
+
+  // -------------------- CREATE SPACE --------------------
   async create(userId: string, dto: CreateSpaceDto, files?: Express.Multer.File[]) {
     const user = await this.prisma.user.findUnique({ where: { id: userId } });
     if (!user) {
       throw new BadRequestException('Your account is not found');
     }
 
-    // -------------------- Upload Images --------------------
+    // -------------------- upload Images --------------------
     let uploadedImages: string[] = [];
     if (files && files.length > 0) {
       const uploadPromises = files.map(async (file) => {
@@ -28,7 +29,7 @@ export class SpacesService {
       uploadedImages = await Promise.all(uploadPromises);
     }
 
-    // -------------------- Parse Numbers --------------------
+    // -------------------- parse Numbers --------------------
     const price = typeof dto.price === 'string' ? parseFloat(dto.price) : dto.price;
     const capacity = dto.capacity
       ? typeof dto.capacity === 'string'
@@ -36,22 +37,22 @@ export class SpacesService {
         : dto.capacity
       : null;
 
-    // -------------------- Parse Amenities --------------------
-   let amenities: Amenity[] = [];
+    // -------------------- parse Amenities --------------------
+    let amenities: Amenity[] = [];
 
-if (dto.amenities) {
-  // Force TypeScript to treat as string | Amenity[]
-  const rawAmenities: string[] =
-    typeof dto.amenities === 'string'
-      ? (dto.amenities as string).split(',').map((a) => a.trim().toUpperCase().replace(/ /g, '_'))
-      : (dto.amenities as Amenity[]).map((a) => a.toString().toUpperCase().replace(/ /g, '_'));
+    if (dto.amenities) {
+      // force TypeScript to treat as string | Amenity[]
+      const rawAmenities: string[] =
+        typeof dto.amenities === 'string'
+          ? (dto.amenities as string).split(',').map((a) => a.trim().toUpperCase().replace(/ /g, '_'))
+          : (dto.amenities as Amenity[]).map((a) => a.toString().toUpperCase().replace(/ /g, '_'));
 
-  rawAmenities.forEach((a) => {
-    if (Object.values(Amenity).includes(a as Amenity)) {
-      amenities.push(a as Amenity);
+      rawAmenities.forEach((a) => {
+        if (Object.values(Amenity).includes(a as Amenity)) {
+          amenities.push(a as Amenity);
+        }
+      });
     }
-  });
-}
 
     // -------------------- Create Space --------------------
     const space = await this.prisma.space.create({
@@ -70,14 +71,15 @@ if (dto.amenities) {
 
     return space;
   }
-  
+
   //  find all space
   async list(userId: string) {
     const user = await this.prisma.user.findUnique({ where: { id: userId } })
     if (!user) {
       throw new BadRequestException("Unauthorized Access.")
     }
-    return this.prisma.space.findMany({ orderBy: { createdAt: 'desc' } });
+   const spaces = await this.prisma.space.findMany({ orderBy: { createdAt: 'desc' } });
+   return spaces
   }
   // find space by Id
   async findOne(userId: string, id: string) {
@@ -89,10 +91,10 @@ if (dto.amenities) {
     return space
   }
 
- // -------------------- UPDATE SPACE --------------------
-  async update(userId : string ,spaceId: string, dto: UpdateSpaceDto, files?: Express.Multer.File[]) {
-    const user = await this.prisma.user.findUnique({where: {id: userId}})
-    if(!user){
+  // -------------------- UPDATE SPACE --------------------
+  async update(userId: string, spaceId: string, dto: UpdateSpaceDto, files?: Express.Multer.File[]) {
+    const user = await this.prisma.user.findUnique({ where: { id: userId } })
+    if (!user) {
       throw new NotFoundException('User is Not Found.')
     }
     const space = await this.prisma.space.findUnique({ where: { id: spaceId } });
@@ -100,7 +102,7 @@ if (dto.amenities) {
       throw new BadRequestException('Space not found');
     }
 
-    // Upload new images if provided
+    // upload new images if provided
     let uploadedImages: string[] = [];
     if (files && files.length > 0) {
       const uploadPromises = files.map(async (file) => {
@@ -110,7 +112,7 @@ if (dto.amenities) {
       uploadedImages = await Promise.all(uploadPromises);
     }
 
-    // Parse numbers
+    // parse numbers
     const price = dto.price ? (typeof dto.price === 'string' ? parseFloat(dto.price) : dto.price) : undefined;
     const capacity = dto.capacity
       ? typeof dto.capacity === 'string'
@@ -118,31 +120,31 @@ if (dto.amenities) {
         : dto.capacity
       : undefined;
 
-    // Parse amenities
-  let amenities: Amenity[] = []; // always an array, never undefined
+    // parse amenities
+    let amenities: Amenity[] = []; // always an array, never undefined
 
-if (dto.amenities) {
-  // Narrow the type to string | Amenity[]
-  const rawAmenities: string[] =
-    typeof dto.amenities === 'string'
-      ? (dto.amenities as string) // type assertion allows .split()
-          .split(',')
-          .map((a) => a.trim().toUpperCase().replace(/ /g, '_'))
-      : (dto.amenities as Amenity[])
-          .map((a) => a.toString().toUpperCase().replace(/ /g, '_'));
+    if (dto.amenities) {
+      // narrow the type to string | Amenity[]
+      const rawAmenities: string[] =
+        typeof dto.amenities === 'string'
+          ? (dto.amenities as string) // type assertion allows .split()
+            .split(',')
+            .map((a) => a.trim().toUpperCase().replace(/ /g, '_'))
+          : (dto.amenities as Amenity[])
+            .map((a) => a.toString().toUpperCase().replace(/ /g, '_'));
 
-  // Filter only valid enum values
-  rawAmenities.forEach((a) => {
-    if (Object.values(Amenity).includes(a as Amenity)) {
-      amenities.push(a as Amenity);
+      // filter only valid enum values
+      rawAmenities.forEach((a) => {
+        if (Object.values(Amenity).includes(a as Amenity)) {
+          amenities.push(a as Amenity);
+        }
+      });
     }
-  });
-}
 
-    // Merge old images with new ones
+    // merge old images with new ones
     const images = uploadedImages.length > 0 ? [...space.images, ...uploadedImages] : space.images;
 
-    // Update space
+    // update space
     const updatedSpace = await this.prisma.space.update({
       where: { id: spaceId },
       data: {
@@ -160,6 +162,7 @@ if (dto.amenities) {
     return updatedSpace;
   }
 
+  // remove space.....
   async delete(userId: string, id: string) {
     const user = await this.prisma.user.findUnique({ where: { id: userId } })
     if (!user) {
