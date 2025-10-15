@@ -8,9 +8,14 @@ export class ReviewsService {
 
     // create reviews...
     async createReview(userId: string, dto: CreateReviewDto) {
+        
         //  Check if space exists
         const space = await this.prisma.space.findUnique({ where: { id: dto.spaceId } });
         if (!space) throw new NotFoundException('Space not found.');
+
+        if(space.ownerId === userId){
+            throw new BadRequestException("You cannot review your own space.")
+        }
 
         //  Check if user has completed a paid booking
         const completedBooking = await this.prisma.booking.findFirst({
@@ -42,7 +47,7 @@ export class ReviewsService {
             },
             include: {
                 user: {
-                    select: { id: true, fullName: true, email: true },
+                    select: { id: true, fullName: true, email: true, avatar:true },
                 },
                 space: {
                     select: { id: true, title: true },
