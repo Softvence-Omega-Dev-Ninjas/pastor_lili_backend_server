@@ -6,6 +6,7 @@ import { PrismaService } from 'src/lib/prisma/prisma.service';
 export class ReviewsService {
     constructor(private prisma: PrismaService) { }
 
+    // create reviews...
     async createReview(userId: string, dto: CreateReviewDto) {
         //  Check if space exists
         const space = await this.prisma.space.findUnique({ where: { id: dto.spaceId } });
@@ -54,6 +55,7 @@ export class ReviewsService {
             review,
         };
     }
+    
     // get space reviews
     async getSpaceReviews(spaceId: string) {
         const reviews = await this.prisma.review.findMany({

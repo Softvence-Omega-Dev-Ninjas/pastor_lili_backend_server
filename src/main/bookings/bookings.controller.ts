@@ -45,7 +45,6 @@ export class BookingsController {
     @Roles('ADMIN', 'SUPERADMIN')
     @Patch(':id/confirm')
     adminConfirm(@Param('id') id: string, @Body() dto: ApproveBookingDto) {
-        console.log(dto.approve)
         return this.bookingsService.adminConfirm(id, dto.approve);
     }
 
