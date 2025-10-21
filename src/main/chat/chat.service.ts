@@ -61,9 +61,12 @@ export class ChatService {
       },
       orderBy: { createdAt: 'asc' },
       select: {
+        id: true,
         senderId: true,
         receiverId: true,
-        content: true
+        content: true,
+        imageUrl:true,
+        createdAt:true
       }
     })
   }
@@ -99,7 +102,7 @@ export class ChatService {
         id: true,
         fullName: true,
         email: true,
-        avatar: true,
+        avatar: true,       
       }
     })
 
