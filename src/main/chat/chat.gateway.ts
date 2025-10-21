@@ -12,7 +12,6 @@ import { PrismaService } from 'src/lib/prisma/prisma.service';
 })
 @Injectable()
 export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
-  [x: string]: any;
   @WebSocketServer()
   server: Server;
   private logger = new Logger('ChatGateway');
@@ -130,7 +129,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
       content: content,
       imageUrl
     })
-    
+
     // Send to both sender and receiver in real-time.
     this.server.to(receiverId).emit('receive_message', saveMessage);
     this.server.to(senderId).emit('receive_message', saveMessage)
