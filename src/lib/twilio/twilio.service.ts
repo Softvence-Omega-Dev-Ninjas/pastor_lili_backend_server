@@ -9,7 +9,7 @@ export class TwilioService {
   constructor(private readonly config: ConfigService) {
     this.client = new Twilio(
       this.config.get<string>('TWILIO_ACCOUNT_SID'),
-      this.config.get<string>('TWILIO_AUTH_TOKEN')
+      this.config.get<string>('TWILIO_AUTH_TOKEN'),
     );
   }
 

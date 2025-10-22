@@ -5,14 +5,14 @@ export async function handleRequest<T>(
   try {
     const result = await action();
     return {
-      status: "success",
+      status: 'success',
       message: successMessage,
       data: result,
     };
   } catch (error) {
     return {
-      status: "error",
-      message: error.message || "Something went wrong",
+      status: 'error',
+      message: error.message || 'Something went wrong',
     };
   }
 }

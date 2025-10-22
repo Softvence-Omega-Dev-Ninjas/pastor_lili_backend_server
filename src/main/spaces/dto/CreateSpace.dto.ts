@@ -1,6 +1,13 @@
-import { ApiProperty } from "@nestjs/swagger";
-import { Amenity } from "@prisma/client";
-import { IsArray, IsEnum, IsNotEmpty, IsNumber, IsOptional, IsString } from "class-validator";
+import { ApiProperty } from '@nestjs/swagger';
+import { Amenity } from '@prisma/client';
+import {
+  IsArray,
+  IsEnum,
+  IsNotEmpty,
+  IsNumber,
+  IsOptional,
+  IsString,
+} from 'class-validator';
 
 export class CreateSpaceDto {
   @ApiProperty({ example: 'Modern City Apartment' })
@@ -8,17 +15,26 @@ export class CreateSpaceDto {
   @IsNotEmpty()
   title: string;
 
-  @ApiProperty({ example: 'Beautiful apartment with city view', required: false })
+  @ApiProperty({
+    example: 'Beautiful apartment with city view',
+    required: false,
+  })
   @IsString()
   @IsOptional()
   subTitle?: string;
 
-  @ApiProperty({ example: 'Spacious apartment with natural light', required: false })
+  @ApiProperty({
+    example: 'Spacious apartment with natural light',
+    required: false,
+  })
   @IsString()
   @IsOptional()
   description?: string;
 
-  @ApiProperty({ example: 'No smoking inside, keep noise low', required: false })
+  @ApiProperty({
+    example: 'No smoking inside, keep noise low',
+    required: false,
+  })
   @IsString()
   @IsOptional()
   guidelines?: string;
@@ -34,7 +50,11 @@ export class CreateSpaceDto {
   capacity?: number;
 
   @ApiProperty({
-    example: [Amenity.WIFI, Amenity.PARKING_AVAILABLE, Amenity.AIR_CONDITIONING],
+    example: [
+      Amenity.WIFI,
+      Amenity.PARKING_AVAILABLE,
+      Amenity.AIR_CONDITIONING,
+    ],
     description: 'List of amenities (enum values)',
     isArray: true,
     enum: Amenity,

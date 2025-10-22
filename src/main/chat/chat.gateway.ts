@@ -1,4 +1,13 @@
-import { WebSocketGateway, SubscribeMessage, MessageBody, ConnectedSocket, OnGatewayConnection, OnGatewayDisconnect, OnGatewayInit, WebSocketServer } from '@nestjs/websockets';
+import {
+  WebSocketGateway,
+  SubscribeMessage,
+  MessageBody,
+  ConnectedSocket,
+  OnGatewayConnection,
+  OnGatewayDisconnect,
+  OnGatewayInit,
+  WebSocketServer,
+} from '@nestjs/websockets';
 import { Socket, Server } from 'socket.io';
 import { ChatService } from './chat.service';
 import { Injectable, Logger } from '@nestjs/common';
@@ -11,7 +20,9 @@ import { PrismaService } from 'src/lib/prisma/prisma.service';
   namespace: '/chat',
 })
 @Injectable()
-export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
+export class ChatGateway
+  implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect
+{
   @WebSocketServer()
   server: Server;
   private logger = new Logger('ChatGateway');
@@ -20,7 +31,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     private readonly prisma: PrismaService,
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
-  ) { }
+  ) {}
 
   // ----------------
   // Server Initialization
@@ -31,19 +42,20 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   }
 
   // -------------------
-  // Handle New Connection 
+  // Handle New Connection
   // -------------------
 
   async handleConnection(client: Socket) {
     try {
       const token = this.extractTokenFromSocket(client);
-      if (!token) return this.disconnectWithError(client, 'Missing token')
+      if (!token) return this.disconnectWithError(client, 'Missing token');
 
       const payload = this.jwtService.verify(token, {
-        secret: this.configService.getOrThrow('JWT_SECRET')
-      })
+        secret: this.configService.getOrThrow('JWT_SECRET'),
+      });
 
-      if (!payload.sub) return this.disconnectWithError(client, 'Invalid token payload')
+      if (!payload.sub)
+        return this.disconnectWithError(client, 'Invalid token payload');
 
       // fetch user from db.
       const user = await this.prisma.user.findUnique({
@@ -52,23 +64,28 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
           id: true,
           email: true,
           fullName: true,
-          avatar: true
+          avatar: true,
         },
       });
 
-      if (!user) return this.disconnectWithError(client, "User not found")
+      if (!user) return this.disconnectWithError(client, 'User not found');
 
       // Attach user info to chat
-      client.data.user = user.id,
-        client.data.user = user;
+      ((client.data.user = user.id), (client.data.user = user));
 
       //  join private user
       client.join(user.id);
 
       this.logger.log(`User connected : ${user.id} (socket ${client.id})`);
-      client.emit('connection_success', { message: 'Connected successfully', user })
+      client.emit('connection_success', {
+        message: 'Connected successfully',
+        user,
+      });
     } catch (error) {
-      this.disconnectWithError(client, error?.message ?? 'Authentication failed');
+      this.disconnectWithError(
+        client,
+        error?.message ?? 'Authentication failed',
+      );
     }
   }
 
@@ -110,13 +127,20 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   }
 
   // -----------------
-  // Send Message 
+  // Send Message
   // -----------------
 
   @SubscribeMessage('sendMessage')
   async handleMessage(
-    @MessageBody() data: { senderId: string; receiverId: string; content: string, imageUrl?: string },
-    @ConnectedSocket() client: Socket) {
+    @MessageBody()
+    data: {
+      senderId: string;
+      receiverId: string;
+      content: string;
+      imageUrl?: string;
+    },
+    @ConnectedSocket() client: Socket,
+  ) {
     const { senderId, receiverId, content, imageUrl } = data;
 
     if (!senderId || !receiverId) {
@@ -127,14 +151,13 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
       senderId: senderId,
       receiverId: receiverId,
       content: content,
-      imageUrl
-    })
+      imageUrl,
+    });
 
     // Send to both sender and receiver in real-time.
     this.server.to(receiverId).emit('receive_message', saveMessage);
-    this.server.to(senderId).emit('receive_message', saveMessage)
+    this.server.to(senderId).emit('receive_message', saveMessage);
   }
-
 
   // ------------------
   // Get All Message for a user
@@ -146,7 +169,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   ) {
     const { userId } = data;
     const messages = await this.chatService.getMessagesByUser(userId);
-    client.emit('user_history', messages)
+    client.emit('user_history', messages);
   }
 
   // --------------------
@@ -158,8 +181,11 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     @ConnectedSocket() client: Socket,
   ) {
     const { userA, userB } = data;
-    const messages = await this.chatService.getMessagesBetweenUsers(userA, userB)
-    client.emit('conversation', messages)
+    const messages = await this.chatService.getMessagesBetweenUsers(
+      userA,
+      userB,
+    );
+    client.emit('conversation', messages);
   }
 
   // -----------------
@@ -171,8 +197,8 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     @ConnectedSocket() client: Socket,
   ) {
     const { userId } = data;
-    const partners = await this.chatService.getChatPartnersWithUser(userId)
-    client.emit('partners_list', partners)
+    const partners = await this.chatService.getChatPartnersWithUser(userId);
+    client.emit('partners_list', partners);
   }
 
   // --------------
@@ -180,12 +206,11 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   // ---------------
   @SubscribeMessage('delete_message')
   async removeMessage(
-    @MessageBody() data: { userId: string, messageId: string },
+    @MessageBody() data: { userId: string; messageId: string },
     @ConnectedSocket() client: Socket,
   ) {
     const { userId, messageId } = data;
-    const result = await this.chatService.removeMessage(userId, messageId)
-    client.emit('message_deleted', { messageId, success: true })
+    const result = await this.chatService.removeMessage(userId, messageId);
+    client.emit('message_deleted', { messageId, success: true });
   }
-
 }
