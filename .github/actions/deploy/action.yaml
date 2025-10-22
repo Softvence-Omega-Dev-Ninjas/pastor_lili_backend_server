@@ -1,0 +1,11 @@
+name: "Deploy to VPS"
+description: "Deploy the application to VPS using deploy.sh"
+runs:
+  using: "composite"
+  steps:
+    - name: Deploy on VPS
+      shell: bash
+      run: |
+        echo "${{ secrets.VPS_SSH_KEY }}" > vps-key.pem
+        chmod 600 vps-key.pem
+        ssh -i vps-key.pem -o StrictHostKeyChecking=no ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} 'bash -s' < ./deploy.sh
