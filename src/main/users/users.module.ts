@@ -4,11 +4,10 @@ import { UsersController } from './users.controller';
 import { PrismaModule } from 'src/lib/prisma/prisma.module';
 import { CloudinaryModule } from 'src/lib/cloudinary/cloudinary.module';
 
-
 @Module({
   imports: [PrismaModule, CloudinaryModule],
   providers: [UsersService],
   controllers: [UsersController],
-  exports: [UsersService]
+  exports: [UsersService],
 })
 export class UsersModule {}

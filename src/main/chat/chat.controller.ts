@@ -1,4 +1,10 @@
-import { Controller, Post, UploadedFiles, UseGuards, UseInterceptors } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  UploadedFiles,
+  UseGuards,
+  UseInterceptors,
+} from '@nestjs/common';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { CloudinaryService } from 'src/lib/cloudinary/cloudinary.service';
 import { ApiConsumes, ApiBody, ApiTags, ApiBearerAuth } from '@nestjs/swagger';
@@ -10,7 +16,7 @@ import { JwtAuthGuard } from 'src/common/guards/jwt.guard';
 export class ChatController {
   constructor(private readonly cloudinaryService: CloudinaryService) {}
 
-  @ApiBearerAuth("JWT-auth")
+  @ApiBearerAuth('JWT-auth')
   @UseGuards(JwtAuthGuard)
   @Post('upload-images')
   @UseInterceptors(FilesInterceptor('files', 20)) // max 20 files
@@ -21,7 +27,10 @@ export class ChatController {
 
     const urls = await Promise.all(
       files.map(async (file) => {
-        const result: any = await this.cloudinaryService.uploadImage(file, 'chat_images');
+        const result: any = await this.cloudinaryService.uploadImage(
+          file,
+          'chat_images',
+        );
         return result.secure_url;
       }),
     );
@@ -29,5 +38,3 @@ export class ChatController {
     return { imageUrls: urls };
   }
 }
-
-

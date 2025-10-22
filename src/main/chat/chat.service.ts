@@ -1,10 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/lib/prisma/prisma.service';
 
-
 @Injectable()
 export class ChatService {
-  constructor(private prisma: PrismaService) { }
+  constructor(private prisma: PrismaService) {}
 
   async saveMessage(data: {
     senderId: string;
@@ -12,14 +11,13 @@ export class ChatService {
     content: string;
     imageUrl?: string; // optional
   }) {
-   
     const senderExists = await this.prisma.user.findFirst({
       where: { id: data.senderId },
-    })
+    });
 
     const receiverExists = await this.prisma.user.findFirst({
-      where: { id: data.receiverId }
-    })
+      where: { id: data.receiverId },
+    });
 
     if (!senderExists || !receiverExists) {
       throw new Error('Sender or receiver docs not exist in User table');
@@ -31,23 +29,19 @@ export class ChatService {
         content: data.content,
         imageUrl: data.imageUrl,
       },
-    })
-    return res
+    });
+    return res;
   }
-
 
   // Get All messages that involve a user
   async getMessagesByUser(userId: string) {
     const messages = await this.prisma.message.findMany({
       where: {
-        OR: [
-          { senderId: userId },
-          { receiverId: userId },
-        ],
+        OR: [{ senderId: userId }, { receiverId: userId }],
       },
       orderBy: { createdAt: 'asc' },
     });
-    return messages
+    return messages;
   }
 
   //  Get all messages between two users
@@ -56,7 +50,7 @@ export class ChatService {
       where: {
         OR: [
           { senderId: userA, receiverId: userB },
-          { senderId: userB, receiverId: userA }
+          { senderId: userB, receiverId: userA },
         ],
       },
       orderBy: { createdAt: 'asc' },
@@ -65,35 +59,33 @@ export class ChatService {
         senderId: true,
         receiverId: true,
         content: true,
-        imageUrl:true,
-        createdAt:true
-      }
-    })
+        imageUrl: true,
+        createdAt: true,
+      },
+    });
   }
 
   // Get unique chat partners and their last message
   async getChatPartnersWithUser(userId: string) {
     const messages = await this.prisma.message.findMany({
       where: {
-        OR: [
-          { senderId: userId }, { receiverId: userId }
-        ],
+        OR: [{ senderId: userId }, { receiverId: userId }],
       },
       select: {
         senderId: true,
         receiverId: true,
         content: true,
-        createdAt: true
+        createdAt: true,
       },
-      orderBy: { createdAt: 'desc' }
-    })
+      orderBy: { createdAt: 'desc' },
+    });
 
     // Extract unique partner Ids
     const partnerIds = new Set<string>();
     messages.forEach((msg) => {
       if (msg.senderId !== userId) partnerIds.add(msg.senderId);
       if (msg.receiverId !== userId) partnerIds.add(msg.receiverId);
-    })
+    });
 
     // fetch partner details
     const partners = await this.prisma.user.findMany({
@@ -102,9 +94,9 @@ export class ChatService {
         id: true,
         fullName: true,
         email: true,
-        avatar: true,       
-      }
-    })
+        avatar: true,
+      },
+    });
 
     // Attach last message for each partner
     const result = partners.map((p) => {
@@ -113,7 +105,7 @@ export class ChatService {
       );
       return { ...p, lastMessage };
     });
-    return result
+    return result;
   }
 
   // Remove User message...
@@ -134,6 +126,6 @@ export class ChatService {
     await this.prisma.message.delete({
       where: { id: messageId },
     });
-    return null
+    return null;
   }
 }

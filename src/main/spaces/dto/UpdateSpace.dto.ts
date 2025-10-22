@@ -1,24 +1,42 @@
-import { ApiPropertyOptional } from "@nestjs/swagger";
-import { Amenity } from "@prisma/client";
-import { IsArray, IsEnum, IsNumber, IsOptional, IsString } from "class-validator";
+import { ApiPropertyOptional } from '@nestjs/swagger';
+import { Amenity } from '@prisma/client';
+import {
+  IsArray,
+  IsEnum,
+  IsNumber,
+  IsOptional,
+  IsString,
+} from 'class-validator';
 
 export class UpdateSpaceDto {
-  @ApiPropertyOptional({ example: 'Modern City Apartment', description: 'Title of the space' })
+  @ApiPropertyOptional({
+    example: 'Modern City Apartment',
+    description: 'Title of the space',
+  })
   @IsString()
   @IsOptional()
   title?: string;
 
-  @ApiPropertyOptional({ example: 'City center, close to metro', description: 'Optional subtitle' })
+  @ApiPropertyOptional({
+    example: 'City center, close to metro',
+    description: 'Optional subtitle',
+  })
   @IsString()
   @IsOptional()
   subTitle?: string;
 
-  @ApiPropertyOptional({ example: 'Spacious apartment with natural light', description: 'Description of the space' })
+  @ApiPropertyOptional({
+    example: 'Spacious apartment with natural light',
+    description: 'Description of the space',
+  })
   @IsString()
   @IsOptional()
   description?: string;
 
-  @ApiPropertyOptional({ example: 'No smoking inside, keep noise low', description: 'Guidelines for guests' })
+  @ApiPropertyOptional({
+    example: 'No smoking inside, keep noise low',
+    description: 'Guidelines for guests',
+  })
   @IsString()
   @IsOptional()
   guidelines?: string;
@@ -34,7 +52,11 @@ export class UpdateSpaceDto {
   capacity?: number;
 
   @ApiPropertyOptional({
-    example: [Amenity.WIFI, Amenity.PARKING_AVAILABLE, Amenity.AIR_CONDITIONING],
+    example: [
+      Amenity.WIFI,
+      Amenity.PARKING_AVAILABLE,
+      Amenity.AIR_CONDITIONING,
+    ],
     description: 'List of amenities (enum values)',
     isArray: true,
     enum: Amenity,

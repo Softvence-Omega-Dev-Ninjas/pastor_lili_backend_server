@@ -10,32 +10,35 @@ async function bootstrap() {
   const config = new DocumentBuilder()
     .setTitle('Pastor_lili API')
     .setVersion('1.0')
-    .addBearerAuth({
-      type:"http",
-      scheme:"bearer",
-      bearerFormat:"JWT",
-    },
-    "JWT-auth",
-  )
+    .addBearerAuth(
+      {
+        type: 'http',
+        scheme: 'bearer',
+        bearerFormat: 'JWT',
+      },
+      'JWT-auth',
+    )
     .build();
 
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('docs', app, document, {
-    swaggerOptions:{
+    swaggerOptions: {
       persistAuthorization: true,
-    }
+    },
   });
 
   app.use(cookieParser());
   app.use(json({ limit: '10mb' }));
   app.use(urlencoded({ extended: true }));
-  app.enableCors("http://localhost:3001");
+  app.enableCors('http://localhost:3001');
 
   // Make raw body available for the Stripe webhook route
   const expressApp = app.getHttpAdapter().getInstance();
-  expressApp.post('/bookings/webhook', express.raw({ type: 'application/json' }));
+  expressApp.post(
+    '/bookings/webhook',
+    express.raw({ type: 'application/json' }),
+  );
 
   await app.listen(process.env.PORT || 3000);
-
 }
 bootstrap();

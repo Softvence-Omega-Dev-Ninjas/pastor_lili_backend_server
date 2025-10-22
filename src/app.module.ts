@@ -9,7 +9,6 @@ import { PrismaModule } from './lib/prisma/prisma.module';
 import { CloudinaryModule } from './lib/cloudinary/cloudinary.module';
 import { ReviewsModule } from './main/review/review.module';
 
-
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
@@ -20,7 +19,7 @@ import { ReviewsModule } from './main/review/review.module';
     BookingsModule,
     ChatModule,
     CloudinaryModule,
-    ReviewsModule
-  ]
+    ReviewsModule,
+  ],
 })
 export class AppModule {}

@@ -19,7 +19,13 @@
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
-    "postinstall": "npx prisma generate"
+    "postinstall": "npx prisma generate",
+     "prisma:generate": "npx prisma generate",
+    "prisma:migrate": "npx prisma migrate deploy",
+    "start:docker": "prisma generate && prisma migrate deploy && node dist/src/main",
+    "lint:fix": "eslint . --ext .ts,.js,.jsx,.tsx --fix",
+    "format:fix": "prettier --ignore-path .gitignore --write \"**/*.+(js|ts|json)\"",
+    "ci:fix": "npm run format:fix"
   },
   "dependencies": {
     "@nestjs/common": "^11.1.6",
