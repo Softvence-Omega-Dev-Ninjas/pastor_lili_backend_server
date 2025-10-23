@@ -8,7 +8,7 @@ import { ChatModule } from './main/chat/chat.module';
 import { PrismaModule } from './lib/prisma/prisma.module';
 import { CloudinaryModule } from './lib/cloudinary/cloudinary.module';
 import { ReviewsModule } from './main/review/review.module';
-
+import { AppController } from './app.controller';
 
 @Module({
   imports: [
@@ -20,7 +20,8 @@ import { ReviewsModule } from './main/review/review.module';
     BookingsModule,
     ChatModule,
     CloudinaryModule,
-    ReviewsModule
-  ]
+    ReviewsModule,
+  ],
+  controllers: [AppController],
 })
 export class AppModule {}
