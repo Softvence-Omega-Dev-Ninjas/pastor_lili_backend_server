@@ -7,6 +7,6 @@ import { PrismaModule } from 'src/lib/prisma/prisma.module';
   imports: [PrismaModule],
   controllers: [SpacesController],
   providers: [SpacesService],
-  exports: [SpacesService]
+  exports: [SpacesService],
 })
 export class SpacesModule {}

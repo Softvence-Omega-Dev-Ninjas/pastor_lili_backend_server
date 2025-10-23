@@ -1,4 +1,8 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreateSpaceDto } from './dto/CreateSpace.dto';
 import { UpdateSpaceDto } from './dto/UpdateSpace.dto';
 import { PrismaService } from 'src/lib/prisma/prisma.service';
@@ -10,10 +14,14 @@ export class SpacesService {
   constructor(
     private prisma: PrismaService,
     private readonly cloudinary: CloudinaryService,
-  ) { }
+  ) {}
 
   // -------------------- CREATE SPACE --------------------
-  async create(userId: string, dto: CreateSpaceDto, files?: Express.Multer.File[]) {
+  async create(
+    userId: string,
+    dto: CreateSpaceDto,
+    files?: Express.Multer.File[],
+  ) {
     const user = await this.prisma.user.findUnique({ where: { id: userId } });
     if (!user) {
       throw new BadRequestException('Your account is not found');
@@ -30,7 +38,8 @@ export class SpacesService {
     }
 
     // -------------------- parse Numbers --------------------
-    const price = typeof dto.price === 'string' ? parseFloat(dto.price) : dto.price;
+    const price =
+      typeof dto.price === 'string' ? parseFloat(dto.price) : dto.price;
     const capacity = dto.capacity
       ? typeof dto.capacity === 'string'
         ? parseInt(dto.capacity, 10)
@@ -38,14 +47,18 @@ export class SpacesService {
       : null;
 
     // -------------------- parse Amenities --------------------
-    let amenities: Amenity[] = [];
+    const amenities: Amenity[] = [];
 
     if (dto.amenities) {
       // force TypeScript to treat as string | Amenity[]
       const rawAmenities: string[] =
         typeof dto.amenities === 'string'
-          ? (dto.amenities as string).split(',').map((a) => a.trim().toUpperCase().replace(/ /g, '_'))
-          : (dto.amenities as Amenity[]).map((a) => a.toString().toUpperCase().replace(/ /g, '_'));
+          ? (dto.amenities as string)
+              .split(',')
+              .map((a) => a.trim().toUpperCase().replace(/ /g, '_'))
+          : (dto.amenities as Amenity[]).map((a) =>
+              a.toString().toUpperCase().replace(/ /g, '_'),
+            );
 
       rawAmenities.forEach((a) => {
         if (Object.values(Amenity).includes(a as Amenity)) {
@@ -74,30 +87,42 @@ export class SpacesService {
 
   //  find all space
   async list(userId: string) {
-    const user = await this.prisma.user.findUnique({ where: { id: userId } })
+    const user = await this.prisma.user.findUnique({ where: { id: userId } });
     if (!user) {
-      throw new BadRequestException("Unauthorized Access.")
+      throw new BadRequestException('Unauthorized Access.');
     }
-   const spaces = await this.prisma.space.findMany({ orderBy: { createdAt: 'desc' } });
-   return spaces
+    const spaces = await this.prisma.space.findMany({
+      orderBy: { createdAt: 'desc' },
+    });
+    return spaces;
   }
   // find space by Id
   async findOne(userId: string, id: string) {
-    const user = await this.prisma.user.findUnique({ where: { id: userId } })
+    const user = await this.prisma.user.findUnique({ where: { id: userId } });
     if (!user) {
-      throw new BadRequestException("Unauthorized Access.")
+      throw new BadRequestException('Unauthorized Access.');
     }
-    const space = await this.prisma.space.findUnique({ where: { id }, include: { reviews: true } })
-    return space
+    const space = await this.prisma.space.findUnique({
+      where: { id },
+      include: { reviews: true },
+    });
+    return space;
   }
 
   // -------------------- UPDATE SPACE --------------------
-  async update(userId: string, spaceId: string, dto: UpdateSpaceDto, files?: Express.Multer.File[]) {
-    const user = await this.prisma.user.findUnique({ where: { id: userId } })
+  async update(
+    userId: string,
+    spaceId: string,
+    dto: UpdateSpaceDto,
+    files?: Express.Multer.File[],
+  ) {
+    const user = await this.prisma.user.findUnique({ where: { id: userId } });
     if (!user) {
-      throw new NotFoundException('User is Not Found.')
+      throw new NotFoundException('User is Not Found.');
     }
-    const space = await this.prisma.space.findUnique({ where: { id: spaceId } });
+    const space = await this.prisma.space.findUnique({
+      where: { id: spaceId },
+    });
     if (!space) {
       throw new BadRequestException('Space not found');
     }
@@ -113,7 +138,11 @@ export class SpacesService {
     }
 
     // parse numbers
-    const price = dto.price ? (typeof dto.price === 'string' ? parseFloat(dto.price) : dto.price) : undefined;
+    const price = dto.price
+      ? typeof dto.price === 'string'
+        ? parseFloat(dto.price)
+        : dto.price
+      : undefined;
     const capacity = dto.capacity
       ? typeof dto.capacity === 'string'
         ? parseInt(dto.capacity, 10)
@@ -121,17 +150,18 @@ export class SpacesService {
       : undefined;
 
     // parse amenities
-    let amenities: Amenity[] = []; // always an array, never undefined
+    const amenities: Amenity[] = []; // always an array, never undefined
 
     if (dto.amenities) {
       // narrow the type to string | Amenity[]
       const rawAmenities: string[] =
         typeof dto.amenities === 'string'
           ? (dto.amenities as string) // type assertion allows .split()
-            .split(',')
-            .map((a) => a.trim().toUpperCase().replace(/ /g, '_'))
-          : (dto.amenities as Amenity[])
-            .map((a) => a.toString().toUpperCase().replace(/ /g, '_'));
+              .split(',')
+              .map((a) => a.trim().toUpperCase().replace(/ /g, '_'))
+          : (dto.amenities as Amenity[]).map((a) =>
+              a.toString().toUpperCase().replace(/ /g, '_'),
+            );
 
       // filter only valid enum values
       rawAmenities.forEach((a) => {
@@ -142,7 +172,10 @@ export class SpacesService {
     }
 
     // merge old images with new ones
-    const images = uploadedImages.length > 0 ? [...space.images, ...uploadedImages] : space.images;
+    const images =
+      uploadedImages.length > 0
+        ? [...space.images, ...uploadedImages]
+        : space.images;
 
     // update space
     const updatedSpace = await this.prisma.space.update({
@@ -164,14 +197,14 @@ export class SpacesService {
 
   // remove space.....
   async delete(userId: string, id: string) {
-    const user = await this.prisma.user.findUnique({ where: { id: userId } })
+    const user = await this.prisma.user.findUnique({ where: { id: userId } });
     if (!user) {
-      throw new BadRequestException("Unauthorized Access.")
+      throw new BadRequestException('Unauthorized Access.');
     }
     const existing = await this.prisma.space.findUnique({ where: { id } });
     if (!existing) throw new NotFoundException('Space not found');
 
     await this.prisma.space.delete({ where: { id } });
-    return null
+    return null;
   }
 }

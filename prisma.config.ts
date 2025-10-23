@@ -5,7 +5,7 @@ import type { PrismaConfig } from 'prisma';
 dotenv.config();
 
 export default {
-  schema: path.join('prisma', 'schema'),
+  schema: path.join('prisma', 'models'),
   migrations: {
     path: path.join('prisma', 'migrations'),
   },
@@ -21,4 +21,3 @@ export default {
     externalTables: true,
   },
 } satisfies PrismaConfig;
-
