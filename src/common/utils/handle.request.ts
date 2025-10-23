@@ -10,6 +10,7 @@ export async function handleRequest<T>(
       data: result,
     };
   } catch (error) {
+    console.log(error)
     return {
       status: 'error',
       message: error.message || 'Something went wrong',
