@@ -5,10 +5,11 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
 import { JwtStrategy } from './strategies/jwt.strategy';
-import { GoogleStrategy } from './strategies/google.strategy';
+// import { GoogleStrategy } from './strategies/google.strategy';
 import { PrismaModule } from 'src/lib/prisma/prisma.module';
 import { MailService } from 'src/lib/mail/mail.service';
 import { TwilioModule } from 'src/lib/twilio/twilio.module';
+// import { FirebaseModule } from '../firebase/firebase.module';
 // import { FacebookStrategy } from './strategies/facebook.strategy';
 
 @Module({
@@ -26,7 +27,7 @@ import { TwilioModule } from 'src/lib/twilio/twilio.module';
       inject: [ConfigService],
     }),
   ],
-  providers: [AuthService, JwtStrategy, GoogleStrategy, MailService],
+  providers: [AuthService, JwtStrategy, MailService],
   controllers: [AuthController],
   exports: [AuthService],
 })
