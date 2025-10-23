@@ -2,13 +2,10 @@ name: "setup-ssh"
 description: "Setup SSH for deployment"
 inputs:
   VPS_USER:
-    description: "VPS username"
     required: true
   VPS_HOST:
-    description: "VPS hostname"
     required: true
   VPS_SSH_PRIVATE_KEY:
-    description: "SSH private key"
     required: true
 runs:
   using: "composite"
@@ -21,7 +18,6 @@ runs:
         chmod 600 ~/.ssh/deploy_key
         ssh-keyscan -H ${{ inputs.VPS_HOST }} >> ~/.ssh/known_hosts
         chmod 644 ~/.ssh/known_hosts
-        
         cat > ~/.ssh/config <<SSHEOF
         Host deploy-server
           HostName ${{ inputs.VPS_HOST }}
@@ -34,5 +30,4 @@ runs:
         
     - name: Test SSH Connection
       shell: bash
-      run: |
-        ssh deploy-server "echo '🎉 SSH Connected successfully!'"
+      run: ssh deploy-server "echo '🎉 SSH Connected successfully!'"

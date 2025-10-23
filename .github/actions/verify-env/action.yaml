@@ -2,13 +2,10 @@ name: "verify-env"
 description: "Verify environment variables"
 inputs:
   PACKAGE_NAME:
-    description: "Package name"
     required: true
   PACKAGE_VERSION:
-    description: "Package version"
     required: true
   IMAGE_TAG:
-    description: "Docker image tag"
     required: true
 runs:
   using: "composite"

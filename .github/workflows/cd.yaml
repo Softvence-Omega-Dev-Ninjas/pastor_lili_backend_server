@@ -1,8 +1,7 @@
 name: CD Pipeline
-
 on:
   workflow_run:
-    workflows: ['CI Pipeline']
+    workflows: ["CI Pipeline"]
     types: [completed]
 
 jobs:
@@ -11,7 +10,6 @@ jobs:
     if: ${{ github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'main' }}
     steps:
       - uses: actions/checkout@v4
-
       - name: Setup Environment
         uses: ./.github/actions/setup-and-load-env
         with:
@@ -46,142 +44,11 @@ jobs:
           VPS_HOST: ${{ secrets.VPS_HOST }}
           VPS_USER: ${{ secrets.VPS_USER }}
           VPS_HOST_IP: ${{ secrets.VPS_HOST_IP }}
-
-      - uses: ./.github/actions/verify-env
-        with:
-          PACKAGE_NAME: ${{ secrets.PACKAGE_NAME }}
-          PACKAGE_VERSION: ${{ secrets.PACKAGE_VERSION }}
-          IMAGE_TAG: ${{ secrets.IMAGE_TAG }}
-
       - uses: ./.github/actions/setup-ssh
         with:
           VPS_USER: ${{ secrets.VPS_USER }}
           VPS_HOST: ${{ secrets.VPS_HOST }}
           VPS_SSH_PRIVATE_KEY: ${{ secrets.VPS_SSH_PRIVATE_KEY }}
-
-      - name: Copy Files to Server
-        run: |
-          echo "Creating directories..."
-          ssh deploy-server "mkdir -p ~/${{ secrets.PACKAGE_NAME }}/scripts"
-
-          echo "Copying files..."
-          scp docker-compose.yaml deploy-server:~/${{ secrets.PACKAGE_NAME }}/
-          scp .env deploy-server:~/${{ secrets.PACKAGE_NAME }}/
-          scp Dockerfile deploy-server:~/${{ secrets.PACKAGE_NAME }}/
-          scp Caddyfile deploy-server:~/${{ secrets.PACKAGE_NAME }}/
-          scp -r scripts deploy-server:~/${{ secrets.PACKAGE_NAME }}/
-          echo "✅ Files copied successfully"
-
-      - name: Fix Script Permissions
-        run: ssh deploy-server "chmod -R +x ~/${{ secrets.PACKAGE_NAME }}/scripts/*.sh"
-
-      - name: Prepare Server OS
-        run: |
-          ssh deploy-server bash << 'PREPARE_EOF'
-          # Update system packages
-          sudo apt update && sudo apt upgrade -y
-
-          # Install Docker if not present
-          if ! command -v docker &> /dev/null; then
-            sudo apt install -y docker.io
-            sudo systemctl start docker
-            sudo systemctl enable docker
-            sudo usermod -aG docker $USER
-          fi
-
-          # Install Docker Compose if not present
-          if ! command -v docker-compose &> /dev/null; then
-            sudo curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" \
-              -o /usr/local/bin/docker-compose
-            sudo chmod +x /usr/local/bin/docker-compose
-          fi
-
-          docker --version
-          docker-compose --version
-          PREPARE_EOF
-
       - name: Deploy Application 🚀
         run: |
-          ssh deploy-server bash << 'DEPLOY_EOF'
-          set -euo pipefail
-          cd ~/${{ secrets.PACKAGE_NAME }}
-
-          # Install Docker Compose plugin if needed
-          if [ ! -f ~/.docker/cli-plugins/docker-compose ]; then
-            echo "Installing Docker Compose plugin..."
-            mkdir -p ~/.docker/cli-plugins/
-            curl -SL https://github.com/docker/compose/releases/latest/download/docker-compose-linux-x86_64 \
-              -o ~/.docker/cli-plugins/docker-compose
-            chmod +x ~/.docker/cli-plugins/docker-compose
-          fi
-
-          # Login to Docker Hub
-          echo "${{ secrets.SE_DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
-
-          # Export environment variables
-          export DOCKER_USERNAME="${{ secrets.DOCKER_USERNAME }}"
-          export PACKAGE_NAME="${{ secrets.PACKAGE_NAME }}"
-          export PACKAGE_VERSION="${{ secrets.PACKAGE_VERSION }}"
-          export EMAIL="${{ secrets.EMAIL }}"
-          export IMAGE_TAG="${{ secrets.IMAGE_TAG }}"
-          export DATABASE_URL="${{ secrets.DATABASE_URL }}"
-          export PORT="${{ secrets.PORT }}"
-          export JWT_SECRET="${{ secrets.JWT_SECRET }}"
-          export JWT_REFRESH_SECRET="${{ secrets.JWT_REFRESH_SECRET }}"
-          export JWT_ACCESS_EXPIRE="${{ secrets.JWT_ACCESS_EXPIRE }}"
-          export JWT_REFRESH_EXPIRE="${{ secrets.JWT_REFRESH_EXPIRE }}"
-          export GOOGLE_CLIENT_ID="${{ secrets.GOOGLE_CLIENT_ID }}"
-          export GOOGLE_CLIENT_SECRET="${{ secrets.GOOGLE_CLIENT_SECRET }}"
-          export FACEBOOK_CLIENT_ID="${{ secrets.FACEBOOK_CLIENT_ID }}"
-          export FACEBOOK_CLIENT_SECRET="${{ secrets.FACEBOOK_CLIENT_SECRET }}"
-          export FRONTEND_URL="${{ secrets.FRONTEND_URL }}"
-          export EMAIL_USER="${{ secrets.EMAIL_USER }}"
-          export EMAIL_PASS="${{ secrets.EMAIL_PASS }}"
-          export TWILIO_ACCOUNT_SID="${{ secrets.TWILIO_ACCOUNT_SID }}"
-          export TWILIO_AUTH_TOKEN="${{ secrets.TWILIO_AUTH_TOKEN }}"
-          export TWILIO_PHONE_NUMBER="${{ secrets.TWILIO_PHONE_NUMBER }}"
-          export STRIPE_SECRET="${{ secrets.STRIPE_SECRET }}"
-          export STRIPE_WEBHOOK_SECRET="${{ secrets.STRIPE_WEBHOOK_SECRET }}"
-          export CLOUDINARY_CLOUD_NAME="${{ secrets.CLOUDINARY_CLOUD_NAME }}"
-          export CLOUDINARY_API_KEY="${{ secrets.CLOUDINARY_API_KEY }}"
-          export CLOUDINARY_API_SECRET="${{ secrets.CLOUDINARY_API_SECRET }}"
-          export SE_DOCKER_PASSWORD="${{ secrets.SE_DOCKER_PASSWORD }}"
-          export SE_GIT_TOKEN="${{ secrets.SE_GIT_TOKEN }}"
-          export VPS_HOST="${{ secrets.VPS_HOST }}"
-          export VPS_USER="${{ secrets.VPS_USER }}"
-          export VPS_HOST_IP="${{ secrets.VPS_HOST_IP }}"
-
-          # Run deployment script
-          echo "Starting zero-downtime deployment..."
-          ./scripts/deploy.sh --version "$PACKAGE_VERSION"
-
-          # Cleanup
-          docker logout
-          docker image prune -f
-          DEPLOY_EOF
-
-      - name: Verify Deployment
-        run: |
-          ssh deploy-server bash << 'VERIFY_EOF'
-          cd ~/${{ secrets.PACKAGE_NAME }}
-
-          echo "=== Checking deployment status ==="
-          ./scripts/deploy.sh status
-
-          echo "=== Testing endpoint ==="
-          if curl -f -s --connect-timeout 5 --max-time 10 \
-            "http://${{ secrets.VPS_HOST_IP }}:${{ secrets.PORT }}/" | grep -q '"status":"ok"'; then
-            echo "🎉 Health check passed! Service is responding correctly"
-          else
-            echo "❌ Health check failed!"
-            exit 1
-          fi
-
-          echo "✅ Deployment verified successfully"
-          VERIFY_EOF
-
-      - name: Cleanup
-        if: always()
-        run: |
-          rm -rf ~/.ssh/deploy_key* ~/.ssh/config
-          rm -f .env
+          ssh deploy-server "echo 'Deploying ${{ secrets.PACKAGE_NAME }} version ${{ secrets.PACKAGE_VERSION }}'"

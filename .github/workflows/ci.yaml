@@ -1,17 +1,15 @@
 name: CI Pipeline
-
 on:
   push:
-    branches: ['**']
+    branches: ["**"]
   pull_request:
-    branches: ['**']
+    branches: ["**"]
 
 jobs:
   lint-test:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
       - name: Setup Environment
         uses: ./.github/actions/setup-and-load-env
         with:
@@ -46,34 +44,28 @@ jobs:
           VPS_HOST: ${{ secrets.VPS_HOST }}
           VPS_USER: ${{ secrets.VPS_USER }}
           VPS_HOST_IP: ${{ secrets.VPS_HOST_IP }}
-
       - uses: ./.github/actions/verify-env
         with:
           PACKAGE_NAME: ${{ secrets.PACKAGE_NAME }}
           PACKAGE_VERSION: ${{ secrets.PACKAGE_VERSION }}
           IMAGE_TAG: ${{ secrets.IMAGE_TAG }}
-
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-
       - uses: pnpm/action-setup@v2
         with:
           version: 10
-
       - uses: actions/cache@v3
         with:
           path: ~/.pnpm-store
           key: ${{ runner.os }}-pnpm-${{ hashFiles('**/pnpm-lock.yaml') }}
           restore-keys: |
             ${{ runner.os }}-pnpm-
-
       - run: pnpm install
       - run: pnpm ci:fix
       - run: pnpm format
       - run: pnpm prisma:generate
       - run: pnpm build
-
       - name: Cleanup
         if: always()
         run: rm -f "${{ github.workspace }}/.env"
@@ -81,10 +73,8 @@ jobs:
   build-and-push:
     needs: lint-test
     runs-on: ubuntu-latest
-    if: ${{ needs.lint-test.result == 'success' && github.ref_name == 'dev' }}
     steps:
       - uses: actions/checkout@v4
-
       - name: Setup Environment
         uses: ./.github/actions/setup-and-load-env
         with:
@@ -119,21 +109,19 @@ jobs:
           VPS_HOST: ${{ secrets.VPS_HOST }}
           VPS_USER: ${{ secrets.VPS_USER }}
           VPS_HOST_IP: ${{ secrets.VPS_HOST_IP }}
-
       - uses: ./.github/actions/verify-env
         with:
           PACKAGE_NAME: ${{ secrets.PACKAGE_NAME }}
           PACKAGE_VERSION: ${{ secrets.PACKAGE_VERSION }}
           IMAGE_TAG: ${{ secrets.IMAGE_TAG }}
-
       - uses: ./.github/actions/docker-login
         with:
           DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
           SE_DOCKER_PASSWORD: ${{ secrets.SE_DOCKER_PASSWORD }}
-
-      - run: docker compose --profile prod build
-      - run: docker compose --profile prod push
-
+      - name: Build Docker Image
+        run: docker compose --profile prod build
+      - name: Push Docker Image
+        run: docker compose --profile prod push
       - name: Cleanup
         if: always()
         run: rm -f "${{ github.workspace }}/.env"

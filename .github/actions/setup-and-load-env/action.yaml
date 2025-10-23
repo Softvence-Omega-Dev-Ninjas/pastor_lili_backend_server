@@ -134,12 +134,9 @@ runs:
           echo "VPS_USER=${{ inputs.VPS_USER }}"
           echo "VPS_HOST_IP=${{ inputs.VPS_HOST_IP }}"
         } > "$ENV_FILE"
-        
-        # Handle SSH key if present
         if [[ -n "${{ inputs.VPS_SSH_PRIVATE_KEY }}" ]]; then
           echo "${{ inputs.VPS_SSH_PRIVATE_KEY }}" > "$GITHUB_WORKSPACE/deploy_key.pem"
           chmod 600 "$GITHUB_WORKSPACE/deploy_key.pem"
           echo "VPS_SSH_PRIVATE_KEY_FILE=$GITHUB_WORKSPACE/deploy_key.pem" >> "$ENV_FILE"
         fi
-        
         echo "✅ Environment file created"

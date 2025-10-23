@@ -2,10 +2,8 @@ name: "docker-login"
 description: "Docker login composite action"
 inputs:
   DOCKER_USERNAME:
-    description: "Docker Hub username"
     required: true
   SE_DOCKER_PASSWORD:
-    description: "Docker Hub password"
     required: true
 runs:
   using: "composite"
