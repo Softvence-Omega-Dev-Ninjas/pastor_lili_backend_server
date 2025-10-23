@@ -2,6 +2,7 @@ import {
   Injectable,
   UnauthorizedException,
   BadRequestException,
+  InternalServerErrorException,
 } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
@@ -14,6 +15,9 @@ import type { StringValue } from 'ms';
 import { expand } from 'dotenv-expand';
 import { config } from 'dotenv';
 import path from 'path';
+import { GoogleLoginDto } from './dto/GoogleLogin.dto';
+import { Role } from '@prisma/client';
+
 
 expand(config({ path: path.resolve(process.cwd(), '.env') }));
 
@@ -25,7 +29,7 @@ export class AuthService {
     private mail: MailService,
     private twilio: TwilioService,
     private readonly configService: ConfigService,
-  ) {}
+  ) { }
 
   private generateOtp() {
     return Math.floor(1000 + Math.random() * 9000).toString();
@@ -50,9 +54,8 @@ export class AuthService {
         verified: false,
       },
     });
-    return user;
-    // await this.mail.sendOtp(dto.email, otp);
-    // return { message: 'User created. OTP sent to email.' };
+    await this.mail.sendOtp(dto.email, otp);
+    return { message: 'User created. OTP sent to email.' };
   }
   // user login
   async login(dto: { email: string; password: string }) {
@@ -154,7 +157,6 @@ export class AuthService {
 
     return { message: 'OTP verified successfully' };
   }
-
   // get token
   async getTokens(userId: string, email: string, role: string) {
     const user = await this.prisma.user.findUnique({ where: { id: userId } });
@@ -163,13 +165,17 @@ export class AuthService {
     const expire = process.env.JWT_REFRESH_EXPIRE ?? '90d';
     const refreshSecreat =
       process.env.JWT_REFRESH_SECRET ?? 'refreshtokensecreat';
+    if (!secret || !expire || !refreshSecreat)
+      throw new InternalServerErrorException(
+        'Secreat OR Expire OR Refresh secreat not found on .env file',
+      );
     const accessToken = this.jwt.sign(payload, {
       secret: secret ?? 'access token secreat by sabbir',
       expiresIn: expire as StringValue,
     });
 
     const refreshToken = this.jwt.sign(payload, {
-      secret: this.configService.getOrThrow<string>(refreshSecreat!),
+      secret: refreshSecreat,
       expiresIn: expire as StringValue,
     });
     return { user, accessToken, refreshToken };
@@ -232,4 +238,62 @@ export class AuthService {
     }
     return this.getTokens(user.id, user.email ?? '', user.role);
   }
+
+  // google login.....
+  async googleLogin(dto: GoogleLoginDto) {
+    let user = await this.prisma.user.findUnique({
+      where: { email: dto.email },
+    });
+
+    if (!user) {
+      const hash = dto.password ? await bcrypt.hash(dto.password, 10) : null;
+
+      user = await this.prisma.user.create({
+        data: {
+          fullName: dto.fullName,
+          email: dto.email,
+          password: hash,
+          role: Role.USER,
+          avatar:dto.avatar,
+          verified: true,
+        },
+      });
+    }
+
+    return this.getTokens(user.id, user.email ?? '', user.role);
+  }
+
+
+  // async socialLogin(idToken: string, provider: 'google' | 'facebook') {
+  //   const decoded: any = await this.firebaseService.verifyToken(idToken);
+  //   const { uid, email, name, picture } = decoded;
+
+
+  //   if (!email) throw new BadRequestException('Email not provided by provider');
+
+  //   let user = await this.prisma.user.findUnique({ where: { email } });
+
+  //   if (!user) {
+  //     const data: any = {
+  //       fullName: name ?? 'Unknown User',
+  //       email,
+  //       verified: true,
+  //       avatar: picture,
+  //     };
+  //     if (provider === 'google') data.googleId = uid;
+  //     if (provider === 'facebook') data.facebookId = uid;
+
+  //     user = await this.prisma.user.create({ data });
+  //   } else {
+  //     const updates: any = {};
+  //     if (provider === 'google' && !user.googleId) updates.googleId = uid;
+  //     if (provider === 'facebook' && !user.facebookId) updates.facebookId = uid;
+  //     if (Object.keys(updates).length > 0) {
+  //       user = await this.prisma.user.update({ where: { id: user.id }, data: updates });
+  //     }
+  //   }
+  //   return this.getTokens(user.id, user.email ?? '', user.role);
+  // }
+
+
 }

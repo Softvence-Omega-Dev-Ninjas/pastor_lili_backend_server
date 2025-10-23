@@ -14,15 +14,15 @@ async function main() {
       email: 'admin@local.com',
       password,
       verified: true,
-      role: 'ADMIN'
-    }
+      role: 'ADMIN',
+    },
   });
 
   console.log('Database seeded successfully');
 }
 
 main()
-  .catch(e => {
+  .catch((e) => {
     console.error(e);
     process.exit(1);
   })

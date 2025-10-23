@@ -34,4 +34,3 @@ export class CreateBookingDto {
   // @IsNumber()
   // amount: number;
 }
-

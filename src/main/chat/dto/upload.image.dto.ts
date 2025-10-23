@@ -11,5 +11,3 @@ export class UploadImageDto {
   @IsNotEmpty({ message: 'Files must be provided' })
   files: any[];
 }
-
-
