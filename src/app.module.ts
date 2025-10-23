@@ -10,7 +10,6 @@ import { CloudinaryModule } from './lib/cloudinary/cloudinary.module';
 import { ReviewsModule } from './main/review/review.module';
 import { AppController } from './app.controller';
 
-
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
@@ -25,4 +24,4 @@ import { AppController } from './app.controller';
   ],
   controllers: [AppController],
 })
-export class AppModule { }
+export class AppModule {}

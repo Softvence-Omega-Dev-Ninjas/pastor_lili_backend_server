@@ -84,7 +84,7 @@ export class UsersService {
       if (uploadIndex === -1) return null;
 
       // Slice the folder path after 'upload' and skip the version folder if present
-      let folderParts = parts.slice(uploadIndex + 1); // ["v1760226970", "user_profiles"]
+      const folderParts = parts.slice(uploadIndex + 1); // ["v1760226970", "user_profiles"]
       if (folderParts[0].startsWith('v')) folderParts.shift(); // remove version if exists
 
       const folderPath = folderParts.join('/'); // "user_profiles"

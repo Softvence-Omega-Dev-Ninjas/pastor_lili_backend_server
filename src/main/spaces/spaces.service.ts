@@ -47,7 +47,7 @@ export class SpacesService {
       : null;
 
     // -------------------- parse Amenities --------------------
-    let amenities: Amenity[] = [];
+    const amenities: Amenity[] = [];
 
     if (dto.amenities) {
       // force TypeScript to treat as string | Amenity[]
@@ -150,7 +150,7 @@ export class SpacesService {
       : undefined;
 
     // parse amenities
-    let amenities: Amenity[] = []; // always an array, never undefined
+    const amenities: Amenity[] = []; // always an array, never undefined
 
     if (dto.amenities) {
       // narrow the type to string | Amenity[]
