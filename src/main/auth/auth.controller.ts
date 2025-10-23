@@ -17,10 +17,11 @@ import { AuthGuard } from '@nestjs/passport';
 import { ApiBearerAuth } from '@nestjs/swagger';
 import { JwtAuthGuard } from 'src/common/guards/jwt.guard';
 import { GetUser } from 'src/common/decorators/get-user.decorator';
+import { GoogleLoginDto } from './dto/GoogleLogin.dto';
 
 @Controller('auth')
 export class AuthController {
-  constructor(private authService: AuthService) {}
+  constructor(private authService: AuthService) { }
 
   @Post('signup')
   signup(@Body() dto: SignupDto) {
@@ -69,23 +70,44 @@ export class AuthController {
   // }
 
   @Post('forget-password')
-  reset(@Body() dto: ResetPasswordDto) {
+  async reset(@Body() dto: ResetPasswordDto) {
     return this.authService.resetPassword(dto.identifier, dto.newPassword);
   }
 
   // OAuth entry points will typically be frontend handled. Provide callback endpoints if needed.
-  @Get('google')
-  @UseGuards(AuthGuard('google'))
-  async googleLogin() {}
 
-  @Get('google/callback')
-  @UseGuards(AuthGuard('google'))
-  async googleCallback(@Req() req) {
-    // redirect with tokens
-    const tokens = req.user;
-    return {
-      message: 'Login successful',
-      tokens,
-    };
+  @Post('google')
+  async googleLogin(@Body() dto: GoogleLoginDto) {
+    return handleRequest(
+      () => this.authService.googleLogin(dto),
+      'google successfully',
+    );
   }
+  // @Get('google')
+  // @UseGuards(AuthGuard('google'))
+  // async googleLogin() {}
+
+  // @Get('google/callback')
+  // @UseGuards(AuthGuard('google'))
+  // async googleCallback(@Req() req) {
+  //   // redirect with tokens
+  //   const tokens = req.user;
+  //   return {
+  //     message: 'Login successful',
+  //     tokens,
+  //   };
+  // }
+
+  // @Post('google-login')
+  // googleLogin(@Body() body: { idToken: string }) {
+  //   return this.authService.socialLogin(body.idToken, 'google');
+  // }
+
+
+  // @Post('facebook-login')
+  // facebookLogin(@Body() body: { idToken: string }) {
+  //   return this.authService.socialLogin(body.idToken, 'facebook')
+  // }
+
+
 }
