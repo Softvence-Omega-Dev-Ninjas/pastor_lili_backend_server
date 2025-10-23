@@ -8,7 +8,11 @@ import { ChatModule } from './main/chat/chat.module';
 import { PrismaModule } from './lib/prisma/prisma.module';
 import { CloudinaryModule } from './lib/cloudinary/cloudinary.module';
 import { ReviewsModule } from './main/review/review.module';
+<<<<<<< HEAD
 
+=======
+import { AppController } from './app.controller';
+>>>>>>> 629848a8c4a818746ebc8de9471216be75e51fe6
 
 @Module({
   imports: [
@@ -20,7 +24,13 @@ import { ReviewsModule } from './main/review/review.module';
     BookingsModule,
     ChatModule,
     CloudinaryModule,
+<<<<<<< HEAD
     ReviewsModule
   ]
+=======
+    ReviewsModule,
+  ],
+  controllers: [AppController],
+>>>>>>> 629848a8c4a818746ebc8de9471216be75e51fe6
 })
 export class AppModule {}

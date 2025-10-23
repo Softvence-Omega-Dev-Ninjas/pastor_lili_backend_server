@@ -4,10 +4,12 @@ import * as express from 'express';
 import { json, urlencoded } from 'express';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import cookieParser from 'cookie-parser';
+import appMetadata from './app-metadata/app-metadata';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   const config = new DocumentBuilder()
+<<<<<<< HEAD
     .setTitle('Pastor_lili API')
     .setVersion('1.0')
     .addBearerAuth({
@@ -17,25 +19,50 @@ async function bootstrap() {
     },
     "JWT-auth",
   )
+=======
+    .setTitle(appMetadata.displayName)
+    .setDescription(appMetadata.description)
+    .setVersion(appMetadata.version)
+    .addBearerAuth(
+      {
+        type: 'http',
+        scheme: 'bearer',
+        bearerFormat: 'JWT',
+      },
+      'JWT-auth',
+    )
+>>>>>>> 629848a8c4a818746ebc8de9471216be75e51fe6
     .build();
 
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('docs', app, document, {
+<<<<<<< HEAD
     swaggerOptions:{
       persistAuthorization: true,
     }
+=======
+    swaggerOptions: {
+      persistAuthorization: true,
+    },
+>>>>>>> 629848a8c4a818746ebc8de9471216be75e51fe6
   });
 
   app.use(cookieParser());
   app.use(json({ limit: '10mb' }));
   app.use(urlencoded({ extended: true }));
+<<<<<<< HEAD
   app.enableCors("http://localhost:3001");
+=======
+  app.enableCors('http://localhost:3001');
+>>>>>>> 629848a8c4a818746ebc8de9471216be75e51fe6
 
   // Make raw body available for the Stripe webhook route
   const expressApp = app.getHttpAdapter().getInstance();
-  expressApp.post('/bookings/webhook', express.raw({ type: 'application/json' }));
+  expressApp.post(
+    '/bookings/webhook',
+    express.raw({ type: 'application/json' }),
+  );
 
   await app.listen(process.env.PORT || 3000);
-
 }
 bootstrap();
