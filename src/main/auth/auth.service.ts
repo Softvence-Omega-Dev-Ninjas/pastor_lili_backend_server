@@ -26,7 +26,7 @@ export class AuthService {
     private mail: MailService,
     private twilio: TwilioService,
     private readonly configService: ConfigService,
-  ) { }
+  ) {}
 
   private generateOtp() {
     return Math.floor(1000 + Math.random() * 9000).toString();
@@ -163,7 +163,10 @@ export class AuthService {
     const expire = process.env.JWT_REFRESH_EXPIRE ?? '90d';
     const refreshSecreat =
       process.env.JWT_REFRESH_SECRET ?? 'refreshtokensecreat';
-    if (!secret || !expire || !refreshSecreat) throw new InternalServerErrorException("Secreat OR Expire OR Refresh secreat not found on .env file")
+    if (!secret || !expire || !refreshSecreat)
+      throw new InternalServerErrorException(
+        'Secreat OR Expire OR Refresh secreat not found on .env file',
+      );
     const accessToken = this.jwt.sign(payload, {
       secret: secret ?? 'access token secreat by sabbir',
       expiresIn: expire as StringValue,

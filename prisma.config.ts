@@ -21,4 +21,3 @@ export default {
     externalTables: true,
   },
 } satisfies PrismaConfig;
-
