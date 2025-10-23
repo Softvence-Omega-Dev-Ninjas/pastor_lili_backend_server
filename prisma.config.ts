@@ -1,10 +1,8 @@
-import { config } from 'dotenv';
-import { expand } from 'dotenv-expand';
-import path from 'path';
+import dotenv from 'dotenv';
+import path from 'node:path';
 import type { PrismaConfig } from 'prisma';
 
-// Explicitly load environment variables
-expand(config({ path: path.resolve(process.cwd(), '.env') }));
+dotenv.config();
 
 export default {
   schema: path.join('prisma', 'models'),
@@ -23,7 +21,4 @@ export default {
     externalTables: true,
   },
 } satisfies PrismaConfig;
-
-
-
 
