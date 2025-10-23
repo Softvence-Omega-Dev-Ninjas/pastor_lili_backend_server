@@ -1,7 +1,8 @@
-import 'dotenv/config'; // * loads .env file for database connection
-
+import dotenv from 'dotenv';
 import path from 'node:path';
 import type { PrismaConfig } from 'prisma';
+
+dotenv.config();
 
 export default {
   schema: path.join('prisma', 'schema'),
@@ -20,3 +21,4 @@ export default {
     externalTables: true,
   },
 } satisfies PrismaConfig;
+
