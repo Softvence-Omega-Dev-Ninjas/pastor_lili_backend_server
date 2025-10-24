@@ -1,11 +1,7 @@
 import {
   Controller,
   Post,
-  Body,
-  UseGuards,
-  Req,
-  Get,
-  Query,
+  Body
 } from '@nestjs/common';
 import { SignupDto } from './dto/signup.dto';
 import { LoginDto } from './dto/login.dto';
@@ -13,10 +9,6 @@ import { AuthService } from './auth.service';
 import { OtpDto, VerifyOtpDto } from './dto/verifyOtp.dto';
 import { EmailVerifiedDto, ForgetPasswordDto, ResetPasswordDto } from './dto/forgetPassword.dto';
 import { handleRequest } from 'src/common/utils/handle.request';
-import { AuthGuard } from '@nestjs/passport';
-import { ApiBearerAuth } from '@nestjs/swagger';
-import { JwtAuthGuard } from 'src/common/guards/jwt.guard';
-import { GetUser } from 'src/common/decorators/get-user.decorator';
 import { GoogleLoginDto } from './dto/GoogleLogin.dto';
 
 @Controller('auth')
