@@ -9,6 +9,7 @@ import { PrismaModule } from './lib/prisma/prisma.module';
 import { CloudinaryModule } from './lib/cloudinary/cloudinary.module';
 import { ReviewsModule } from './main/review/review.module';
 import { AppController } from './app.controller';
+import { SeedModule } from './lib/seed/seed.module';
 
 
 @Module({
@@ -22,8 +23,8 @@ import { AppController } from './app.controller';
     ChatModule,
     CloudinaryModule,
     ReviewsModule,
-  
+    SeedModule
   ],
   controllers: [AppController],
 })
-export class AppModule {}
+export class AppModule { }

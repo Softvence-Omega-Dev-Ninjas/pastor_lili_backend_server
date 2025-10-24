@@ -11,7 +11,7 @@ import { SignupDto } from './dto/signup.dto';
 import { LoginDto } from './dto/login.dto';
 import { AuthService } from './auth.service';
 import { OtpDto, VerifyOtpDto } from './dto/verifyOtp.dto';
-import { ForgetPasswordDto, ResetPasswordDto } from './dto/forgetPassword.dto';
+import { EmailVerifiedDto, ForgetPasswordDto, ResetPasswordDto } from './dto/forgetPassword.dto';
 import { handleRequest } from 'src/common/utils/handle.request';
 import { AuthGuard } from '@nestjs/passport';
 import { ApiBearerAuth } from '@nestjs/swagger';
@@ -39,18 +39,14 @@ export class AuthController {
     );
   }
   // email verify otp
-  @ApiBearerAuth('JWT-auth')
-  @UseGuards(JwtAuthGuard)
   @Post('emailVerify-otp')
-  resendOtp(@GetUser('email') email: string) {
-    return this.authService.resendOtp(email);
+  resendOtp(@Body() dto:EmailVerifiedDto) {
+    return this.authService.resendOtp(dto);
   }
   // otp verification for email verified
-  @ApiBearerAuth('JWT-auth')
-  @UseGuards(JwtAuthGuard)
   @Post('verify-otp')
-  verifyOtp(@GetUser('email') email: string, @Body() dto: OtpDto) {
-    return this.authService.verifyOtp(email, dto.otp);
+  verifyOtp(@Body() dto: OtpDto) {
+    return this.authService.verifyOtp(dto);
   }
 
   // forget password send otp

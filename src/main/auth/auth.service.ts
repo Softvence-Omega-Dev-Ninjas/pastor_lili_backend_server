@@ -17,6 +17,8 @@ import { config } from 'dotenv';
 import path from 'path';
 import { GoogleLoginDto } from './dto/GoogleLogin.dto';
 import { Role } from '@prisma/client';
+import { EmailVerifiedDto } from './dto/forgetPassword.dto';
+import { OtpDto } from './dto/verifyOtp.dto';
 
 
 expand(config({ path: path.resolve(process.cwd(), '.env') }));
@@ -70,8 +72,8 @@ export class AuthService {
   }
 
   // send otp for email verifications.
-  async resendOtp(email: string) {
-    const user = await this.prisma.user.findUnique({ where: { email } });
+  async resendOtp(dto: EmailVerifiedDto) {
+    const user = await this.prisma.user.findUnique({ where: { email: dto.email } });
     if (!user) throw new BadRequestException('No user found with this email');
 
     if (user.verified) {
@@ -82,33 +84,51 @@ export class AuthService {
     const otpExpiry = new Date(Date.now() + 5 * 60 * 1000); // 10 mins validity
 
     await this.prisma.user.update({
-      where: { email },
+      where: { email: dto.email },
       data: { otp, otpExpiresAt: otpExpiry },
     });
 
-    await this.mail.sendOtp(email, otp, 'Email Verification OTP');
+    await this.mail.sendOtp(dto.email, otp, 'Email Verification OTP');
 
     return { message: 'OTP sent to your email.' };
   }
 
   // otp verify for email verify
-  async verifyOtp(email: string, otp: string) {
-    const user = await this.prisma.user.findUnique({ where: { email } });
-    if (!user) throw new UnauthorizedException('No user');
-    if (user.verified) return { message: 'Already verified' };
-    if (
-      !user.otp ||
-      user.otp !== otp ||
-      !user.otpExpiresAt ||
-      user.otpExpiresAt < new Date()
-    ) {
-      throw new UnauthorizedException('Invalid or expired otp');
+  async verifyOtp(dto: OtpDto) {
+    const { email, otp } = dto;
+
+    // Find the user by email
+    const user = await this.prisma.user.findUnique({ where: { email: email.trim() } });
+    if (!user) {
+      throw new UnauthorizedException('No user found with this email');
     }
+
+    // Check if already verified
+    if (user.verified) {
+      return { message: 'User is already verified' };
+    }
+
+    // Validate OTP existence and match
+    if (!user.otp || user.otp !== otp) {
+      throw new UnauthorizedException('Invalid OTP');
+    }
+
+    // Check if OTP is expired
+    if (!user.otpExpiresAt || user.otpExpiresAt < new Date()) {
+      throw new UnauthorizedException('OTP has expired');
+    }
+
+    // ✅ OTP verified successfully
     await this.prisma.user.update({
       where: { email },
-      data: { verified: true, otp: null, otpExpiresAt: null },
+      data: {
+        verified: true,
+        otp: null,
+        otpExpiresAt: null,
+      },
     });
-    return { message: 'Verified' };
+
+    return { message: 'Email verification successful' };
   }
 
   // forget password......
@@ -254,7 +274,7 @@ export class AuthService {
           email: dto.email,
           password: hash,
           role: Role.USER,
-          avatar:dto.avatar,
+          avatar: dto.avatar,
           verified: true,
         },
       });

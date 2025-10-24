@@ -19,3 +19,11 @@ export class ResetPasswordDto {
   @IsString()
   newPassword: string;
 }
+
+export class EmailVerifiedDto {
+  @ApiProperty({ example: 'john@gmail.com' })
+  @IsNotEmpty()
+  @IsString()
+  email: string; // email or phone
+}
+
