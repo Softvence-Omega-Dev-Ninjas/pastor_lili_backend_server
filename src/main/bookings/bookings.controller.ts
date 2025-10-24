@@ -45,6 +45,20 @@ export class BookingsController {
     );
   }
 
+  // admin confirm (protect with role guard in route in real project)
+  @ApiOperation({ summary: 'Protected Route For (ADMIN)' })
+  @ApiBearerAuth('JWT-auth')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('ADMIN', 'SUPERADMIN')
+  @Get('/')
+  async findAllBooking(){
+    return handleRequest(
+      () => this.bookingsService.findAllBooking(),
+      'Get All Booking successfully',
+    );
+  }
+
+
   // Stripe webhook - expects raw body; route registered in main.ts as raw.
   @Post('webhook')
   async webhook(

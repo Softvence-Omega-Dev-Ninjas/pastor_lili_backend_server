@@ -118,6 +118,12 @@ export class BookingsService {
     return { clientSecret: paymentIntent.client_secret, booking: fullBooking };
   }
 
+  // findAllBooking
+  async findAllBooking(){
+    const bookings = await this.prisma.booking.findMany({})
+    return bookings
+  }
+
   // web hook.....
   async handleStripeWebhook(
     rawBody: Buffer,

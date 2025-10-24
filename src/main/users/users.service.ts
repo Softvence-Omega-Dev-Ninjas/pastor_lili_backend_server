@@ -8,7 +8,7 @@ export class UsersService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly cloudinary: CloudinaryService,
-  ) {}
+  ) { }
 
   // get user profile
   async findById(id: string) {
@@ -57,6 +57,17 @@ export class UsersService {
         role: true,
       },
     });
+  }
+  // user account delete
+  async remove(userId: string) {
+    const user = await this.prisma.user.findUnique({ where: { id: userId } })
+    if (!user) {
+      throw new NotFoundException("User Not Found")
+    }
+    // delete user logic
+    await this.prisma.user.delete({ where: { id: userId } });
+
+    return { message: 'Account deleted successfully' };
   }
   // find user by email
   async findByEmail(email: string) {

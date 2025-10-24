@@ -3,6 +3,7 @@ import {
   UnauthorizedException,
   BadRequestException,
   InternalServerErrorException,
+  NotFoundException,
 } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
@@ -19,6 +20,7 @@ import { GoogleLoginDto } from './dto/GoogleLogin.dto';
 import { Role } from '@prisma/client';
 import { EmailVerifiedDto } from './dto/forgetPassword.dto';
 import { OtpDto } from './dto/verifyOtp.dto';
+import { adminResetPasswordDto } from './dto/adminResetPassword.dto';
 
 
 expand(config({ path: path.resolve(process.cwd(), '.env') }));
@@ -282,38 +284,38 @@ export class AuthService {
 
     return this.getTokens(user.id, user.email ?? '', user.role);
   }
+  // admin password reset...
+  async adminResetPassword(userId: string, dto: adminResetPasswordDto) {
+    const { oldPassword, newPassword } = dto;
 
+    // find the user
+    const user = await this.prisma.user.findUnique({ where: { id: userId } });
+    if (!user) throw new NotFoundException('User not found');
 
-  // async socialLogin(idToken: string, provider: 'google' | 'facebook') {
-  //   const decoded: any = await this.firebaseService.verifyToken(idToken);
-  //   const { uid, email, name, picture } = decoded;
+    // verify the user is an ADMIN or SUPERADMIN
+    if (user.role !== 'ADMIN' && user.role !== 'SUPERADMIN') {
+      throw new BadRequestException('Only admin users can reset password');
+    }
 
+    // ensure user has a password (skip for Google/Facebook logins)
+    if (!user.password) {
+      throw new BadRequestException('This account has no password (social login)');
+    }
 
-  //   if (!email) throw new BadRequestException('Email not provided by provider');
+    // compare old password
+    const isMatch = await bcrypt.compare(oldPassword, user.password);
+    if (!isMatch) throw new UnauthorizedException('Old password is incorrect');
 
-  //   let user = await this.prisma.user.findUnique({ where: { email } });
+    // hash new password (with salt rounds = 10)
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
 
-  //   if (!user) {
-  //     const data: any = {
-  //       fullName: name ?? 'Unknown User',
-  //       email,
-  //       verified: true,
-  //       avatar: picture,
-  //     };
-  //     if (provider === 'google') data.googleId = uid;
-  //     if (provider === 'facebook') data.facebookId = uid;
+    // update password in database
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: { password: hashedPassword },
+    });
 
-  //     user = await this.prisma.user.create({ data });
-  //   } else {
-  //     const updates: any = {};
-  //     if (provider === 'google' && !user.googleId) updates.googleId = uid;
-  //     if (provider === 'facebook' && !user.facebookId) updates.facebookId = uid;
-  //     if (Object.keys(updates).length > 0) {
-  //       user = await this.prisma.user.update({ where: { id: user.id }, data: updates });
-  //     }
-  //   }
-  //   return this.getTokens(user.id, user.email ?? '', user.role);
-  // }
-
+    return { data: null};
+  }
 
 }

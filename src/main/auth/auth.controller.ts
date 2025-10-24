@@ -1,7 +1,9 @@
 import {
   Controller,
   Post,
-  Body
+  Body,
+  Patch,
+  UseGuards
 } from '@nestjs/common';
 import { SignupDto } from './dto/signup.dto';
 import { LoginDto } from './dto/login.dto';
@@ -10,6 +12,12 @@ import { OtpDto, VerifyOtpDto } from './dto/verifyOtp.dto';
 import { EmailVerifiedDto, ForgetPasswordDto, ResetPasswordDto } from './dto/forgetPassword.dto';
 import { handleRequest } from 'src/common/utils/handle.request';
 import { GoogleLoginDto } from './dto/GoogleLogin.dto';
+import { adminResetPasswordDto } from './dto/adminResetPassword.dto';
+import { GetUser } from 'src/common/decorators/get-user.decorator';
+import { ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
+import { JwtAuthGuard } from 'src/common/guards/jwt.guard';
+import { RolesGuard } from 'src/common/guards/roles.guard';
+import { Roles } from 'src/common/decorators/roles.decorator';
 
 @Controller('auth')
 export class AuthController {
@@ -32,7 +40,7 @@ export class AuthController {
   }
   // email verify otp
   @Post('emailVerify-otp')
-  resendOtp(@Body() dto:EmailVerifiedDto) {
+  resendOtp(@Body() dto: EmailVerifiedDto) {
     return this.authService.resendOtp(dto);
   }
   // otp verification for email verified
@@ -71,31 +79,19 @@ export class AuthController {
       'google successfully',
     );
   }
-  // @Get('google')
-  // @UseGuards(AuthGuard('google'))
-  // async googleLogin() {}
 
-  // @Get('google/callback')
-  // @UseGuards(AuthGuard('google'))
-  // async googleCallback(@Req() req) {
-  //   // redirect with tokens
-  //   const tokens = req.user;
-  //   return {
-  //     message: 'Login successful',
-  //     tokens,
-  //   };
-  // }
-
-  // @Post('google-login')
-  // googleLogin(@Body() body: { idToken: string }) {
-  //   return this.authService.socialLogin(body.idToken, 'google');
-  // }
-
-
-  // @Post('facebook-login')
-  // facebookLogin(@Body() body: { idToken: string }) {
-  //   return this.authService.socialLogin(body.idToken, 'facebook')
-  // }
+  // admin reset password.
+  @ApiOperation({ summary: 'Protected Route For (ADMIN)' })
+  @ApiBearerAuth('JWT-auth')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('ADMIN', 'SUPERADMIN')
+  @Patch('admin-reset-password')
+  async adminResetPassword(@GetUser('id') userId:string, @Body() dto: adminResetPasswordDto ){
+     return handleRequest(
+      () => this.authService.adminResetPassword(userId, dto),
+      'admin Password Reset successfully',
+    );
+  }
 
 
 }
