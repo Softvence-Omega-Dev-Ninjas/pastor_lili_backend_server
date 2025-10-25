@@ -13,7 +13,7 @@ import {
 import { BookingsService } from './bookings.service';
 import { CreateBookingDto } from './dto/create-booking.dto';
 import { ConfigService } from '@nestjs/config';
-import type { Response } from 'express';
+import type { Request, Response } from 'express';
 import {
   ApiBearerAuth,
   ApiOperation,
@@ -33,7 +33,7 @@ export class BookingsController {
   constructor(
     private bookingsService: BookingsService,
     private config: ConfigService,
-  ) {}
+  ) { }
 
   @ApiBearerAuth('JWT-auth')
   @UseGuards(JwtAuthGuard)
@@ -51,7 +51,7 @@ export class BookingsController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('ADMIN', 'SUPERADMIN')
   @Get('/')
-  async findAllBooking(){
+  async findAllBooking() {
     return handleRequest(
       () => this.bookingsService.findAllBooking(),
       'Get All Booking successfully',
@@ -62,23 +62,31 @@ export class BookingsController {
   // Stripe webhook - expects raw body; route registered in main.ts as raw.
   @Post('webhook')
   async webhook(
-    @Req() req: any,
+    @Req() req: Request,
     @Headers('stripe-signature') sig: string,
     @Res() res: Response,
   ) {
-    const endpointSecret: string | undefined =
-      process.env.STRIPE_WEBHOOK_SECRET;
+    const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET;
     if (!endpointSecret) {
-      throw new Error('Missing Stripe Webhook Secret!');
+      console.error('❌ Missing Stripe Webhook Secret!');
+      return res.status(500).send('Server configuration error');
     }
-    const rawBody = req.body; // express.raw set in main.ts for this route
-    const result = await this.bookingsService.handleStripeWebhook(
-      rawBody,
-      sig,
-      endpointSecret,
-    );
-    return res.json(result);
+
+    const rawBody = req.body;
+
+    try {
+      const result = await this.bookingsService.handleStripeWebhook(
+        rawBody,
+        sig,
+        endpointSecret,
+      );
+      return res.json(result);
+    } catch (err) {
+      console.error('❌ Webhook handler error:', err.message);
+      return res.status(400).send(`Webhook Error: ${err.message}`);
+    }
   }
+
 
   // admin confirm (protect with role guard in route in real project)
   @ApiOperation({ summary: 'Protected Route For (ADMIN)' })

@@ -3,6 +3,7 @@ import {
   BadRequestException,
   NotFoundException,
   UseGuards,
+  Logger,
 } from '@nestjs/common';
 import Stripe from 'stripe';
 import { ConfigService } from '@nestjs/config';
@@ -12,6 +13,7 @@ import { BookingStatus } from '@prisma/client';
 
 @Injectable()
 export class BookingsService {
+  private readonly logger = new Logger(BookingsService.name)
   private stripe: Stripe;
   constructor(
     private prisma: PrismaService,
@@ -119,7 +121,7 @@ export class BookingsService {
   }
 
   // findAllBooking
-  async findAllBooking(){
+  async findAllBooking() {
     const bookings = await this.prisma.booking.findMany({})
     return bookings
   }
@@ -130,7 +132,7 @@ export class BookingsService {
     sig: string,
     endpointSecret: string,
   ) {
-    console.log(rawBody, 'Payload');
+    // console.log(rawBody, 'Payload');
     let event;
     try {
       event = this.stripe.webhooks.constructEvent(rawBody, sig, endpointSecret);
@@ -139,19 +141,23 @@ export class BookingsService {
         `Webhook signature verification failed: ${err.message}`,
       );
     }
+    // console.log(event, "Event");
 
     if (event.type === 'payment_intent.succeeded') {
       const pi = event.data.object as Stripe.PaymentIntent;
       const bookingId = pi.metadata?.bookingId;
-      await this.prisma.payment.update({
+      const updatedData = await this.prisma.payment.update({
         where: { stripePaymentId: pi.id },
         data: { status: 'succeeded' },
       });
-      if (bookingId)
-        await this.prisma.booking.update({
+      this.logger.log("payment data", updatedData)
+      if (bookingId) {
+        const bookingData = await this.prisma.booking.update({
           where: { id: bookingId },
           data: { status: 'COMPLETED', paymentId: pi.id },
         });
+        this.logger.log("booking data", bookingData)  
+      }
     }
     return { received: true };
   }

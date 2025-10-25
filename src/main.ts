@@ -1,6 +1,6 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import * as express from 'express';
+import * as bodyParser from 'body-parser';
 import { json, urlencoded } from 'express';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import cookieParser from 'cookie-parser';
@@ -29,17 +29,14 @@ async function bootstrap() {
     },
   });
 
-  app.use(cookieParser());
+  // ✅ STEP 1: Raw body first (for Stripe webhook)
+  app.use('/bookings/webhook', bodyParser.raw({ type: 'application/json' }));
+
+  // ✅ STEP 2: Normal parsers for all other routes
   app.use(json({ limit: '10mb' }));
   app.use(urlencoded({ extended: true }));
-  app.enableCors('http://localhost:3001');
 
-  // Make raw body available for the Stripe webhook route
-  const expressApp = app.getHttpAdapter().getInstance();
-  expressApp.post(
-    '/bookings/webhook',
-    express.raw({ type: 'application/json' }),
-  );
+  app.enableCors({ origin: 'http://localhost:3001' });
 
   await app.listen(process.env.PORT || 3000);
 }
