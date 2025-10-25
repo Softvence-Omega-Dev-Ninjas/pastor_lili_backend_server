@@ -20,27 +20,26 @@ export class UpdateUserDto {
   phone?: string;
 
   @ApiProperty({
-    type: "string",
-    format: "binary",
-    description: "The file to upload",
+    type: 'string',
+    format: 'binary',
+    description: 'The file to upload',
   })
   @IsOptional()
-  file?: any; 
+  file?: any;
 }
 
 export const apiBodyExample = {
   schema: {
-    type: "object",
+    type: 'object',
     properties: {
       files: {
-        type: "array",
+        type: 'array',
         items: {
-          type: "string",
-          format: "binary",
+          type: 'string',
+          format: 'binary',
         },
         maxItems: 20,
       },
     },
   },
 };
-

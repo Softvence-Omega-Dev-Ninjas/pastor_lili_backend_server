@@ -1,15 +1,23 @@
-import { Controller, Post, Body, UseGuards, Req, Get, Query } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Body,
+  Patch,
+  UseGuards
+} from '@nestjs/common';
 import { SignupDto } from './dto/signup.dto';
 import { LoginDto } from './dto/login.dto';
 import { AuthService } from './auth.service';
-import {  OtpDto, VerifyOtpDto } from './dto/verifyOtp.dto';
-import { ForgetPasswordDto, ResetPasswordDto } from './dto/forgetPassword.dto';
+import { OtpDto, VerifyOtpDto } from './dto/verifyOtp.dto';
+import { EmailVerifiedDto, ForgetPasswordDto, ResetPasswordDto } from './dto/forgetPassword.dto';
 import { handleRequest } from 'src/common/utils/handle.request';
-import { AuthGuard } from '@nestjs/passport';
-import { ApiBearerAuth } from '@nestjs/swagger';
-import { JwtAuthGuard } from 'src/common/guards/jwt.guard';
+import { GoogleLoginDto } from './dto/GoogleLogin.dto';
+import { adminResetPasswordDto } from './dto/adminResetPassword.dto';
 import { GetUser } from 'src/common/decorators/get-user.decorator';
-
+import { ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
+import { JwtAuthGuard } from 'src/common/guards/jwt.guard';
+import { RolesGuard } from 'src/common/guards/roles.guard';
+import { Roles } from 'src/common/decorators/roles.decorator';
 
 @Controller('auth')
 export class AuthController {
@@ -29,21 +37,16 @@ export class AuthController {
       () => this.authService.login(dto),
       'User login successfully',
     );
-
   }
   // email verify otp
-  @ApiBearerAuth("JWT-auth")
-  @UseGuards(JwtAuthGuard)
   @Post('emailVerify-otp')
-  resendOtp(@GetUser('email') email:string) {
-    return this.authService.resendOtp(email);
+  resendOtp(@Body() dto: EmailVerifiedDto) {
+    return this.authService.resendOtp(dto);
   }
-  // otp verification for email verified 
-  @ApiBearerAuth("JWT-auth")
-  @UseGuards(JwtAuthGuard)
+  // otp verification for email verified
   @Post('verify-otp')
-  verifyOtp(@GetUser('email') email:string, @Body() dto: OtpDto) {
-    return this.authService.verifyOtp(email , dto.otp);
+  verifyOtp(@Body() dto: OtpDto) {
+    return this.authService.verifyOtp(dto);
   }
 
   // forget password send otp
@@ -57,33 +60,38 @@ export class AuthController {
     return this.authService.forgetVerifyOtp(dto.identifier, dto.otp);
   }
 
-
   // @Post('refresh')
   // refresh(@Body() body: { refreshToken: string }) {
   //   return this.authService.refreshTokens(body.refreshToken);
   // }
 
-
   @Post('forget-password')
-  reset(@Body() dto: ResetPasswordDto) {
+  async reset(@Body() dto: ResetPasswordDto) {
     return this.authService.resetPassword(dto.identifier, dto.newPassword);
   }
 
-
   // OAuth entry points will typically be frontend handled. Provide callback endpoints if needed.
-  @Get('google')
-  @UseGuards(AuthGuard('google'))
-  async googleLogin() {
+
+  @Post('google')
+  async googleLogin(@Body() dto: GoogleLoginDto) {
+    return handleRequest(
+      () => this.authService.googleLogin(dto),
+      'google successfully',
+    );
   }
 
-  @Get('google/callback')
-  @UseGuards(AuthGuard('google'))
-  async googleCallback(@Req() req) {
-    // redirect with tokens
-    const tokens = req.user;
-    return {
-      message: 'Login successful',
-      tokens,
-    };
+  // admin reset password.
+  @ApiOperation({ summary: 'Protected Route For (ADMIN)' })
+  @ApiBearerAuth('JWT-auth')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('ADMIN', 'SUPERADMIN')
+  @Patch('admin-reset-password')
+  async adminResetPassword(@GetUser('id') userId:string, @Body() dto: adminResetPasswordDto ){
+     return handleRequest(
+      () => this.authService.adminResetPassword(userId, dto),
+      'admin Password Reset successfully',
+    );
   }
+
+
 }

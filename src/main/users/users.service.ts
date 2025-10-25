@@ -7,13 +7,14 @@ import { CloudinaryService } from 'src/lib/cloudinary/cloudinary.service';
 export class UsersService {
   constructor(
     private readonly prisma: PrismaService,
-    private readonly cloudinary: CloudinaryService
+    private readonly cloudinary: CloudinaryService,
   ) { }
 
   // get user profile
   async findById(id: string) {
     const user = await this.prisma.user.findUnique({
-      where: { id }, select: {
+      where: { id },
+      select: {
         fullName: true,
         email: true,
         avatar: true,
@@ -21,7 +22,7 @@ export class UsersService {
       },
     });
     if (!user) {
-      throw new NotFoundException("Your Account is Not Found.")
+      throw new NotFoundException('Your Account is Not Found.');
     }
     return user;
   }
@@ -29,31 +30,44 @@ export class UsersService {
   // update user profile..
   async updateProfile(id: string, dto: UpdateUserDto) {
     const user = await this.prisma.user.findUnique({
-      where: { id }
-    })
+      where: { id },
+    });
     if (!user) {
-      throw new NotFoundException("Your Account is Not Found.")
+      throw new NotFoundException('Your Account is Not Found.');
     }
-    
+
     if (user.avatar) {
       try {
         const publicId = this.extractPublicId(user.avatar);
-        
+
         if (publicId) {
-          await this.cloudinary.deleteImage(publicId)
+          await this.cloudinary.deleteImage(publicId);
         }
       } catch (error) {
-        console.log('Failed to delete old avatar: ', error)
+        console.log('Failed to delete old avatar: ', error);
       }
     }
     return this.prisma.user.update({
-      where: { id }, data: { ...dto }, select: {
+      where: { id },
+      data: { ...dto },
+      select: {
         fullName: true,
         email: true,
         avatar: true,
         role: true,
       },
     });
+  }
+  // user account delete
+  async remove(userId: string) {
+    const user = await this.prisma.user.findUnique({ where: { id: userId } })
+    if (!user) {
+      throw new NotFoundException("User Not Found")
+    }
+    // delete user logic
+    await this.prisma.user.delete({ where: { id: userId } });
+
+    return { message: 'Account deleted successfully' };
   }
   // find user by email
   async findByEmail(email: string) {
@@ -77,11 +91,11 @@ export class UsersService {
       const fileName = fileWithExt.split('.')[0]; // "ejzkvpw47ozcgcp1iinp"
 
       // Find the index of 'upload' folder
-      const uploadIndex = parts.findIndex(p => p === 'upload');
+      const uploadIndex = parts.findIndex((p) => p === 'upload');
       if (uploadIndex === -1) return null;
 
       // Slice the folder path after 'upload' and skip the version folder if present
-      let folderParts = parts.slice(uploadIndex + 1); // ["v1760226970", "user_profiles"]
+      const folderParts = parts.slice(uploadIndex + 1); // ["v1760226970", "user_profiles"]
       if (folderParts[0].startsWith('v')) folderParts.shift(); // remove version if exists
 
       const folderPath = folderParts.join('/'); // "user_profiles"
@@ -93,5 +107,4 @@ export class UsersService {
       return null;
     }
   }
-
 }

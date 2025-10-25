@@ -3,6 +3,7 @@ import {
   UnauthorizedException,
   BadRequestException,
   InternalServerErrorException,
+  NotFoundException,
 } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
@@ -15,6 +16,12 @@ import type { StringValue } from 'ms';
 import { expand } from 'dotenv-expand';
 import { config } from 'dotenv';
 import path from 'path';
+import { GoogleLoginDto } from './dto/GoogleLogin.dto';
+import { Role } from '@prisma/client';
+import { EmailVerifiedDto } from './dto/forgetPassword.dto';
+import { OtpDto } from './dto/verifyOtp.dto';
+import { adminResetPasswordDto } from './dto/adminResetPassword.dto';
+
 
 expand(config({ path: path.resolve(process.cwd(), '.env') }));
 
@@ -51,9 +58,8 @@ export class AuthService {
         verified: false,
       },
     });
-    return user;
-    // await this.mail.sendOtp(dto.email, otp);
-    // return { message: 'User created. OTP sent to email.' };
+    await this.mail.sendOtp(dto.email, otp);
+    return { message: 'User created. OTP sent to email.' };
   }
   // user login
   async login(dto: { email: string; password: string }) {
@@ -68,8 +74,8 @@ export class AuthService {
   }
 
   // send otp for email verifications.
-  async resendOtp(email: string) {
-    const user = await this.prisma.user.findUnique({ where: { email } });
+  async resendOtp(dto: EmailVerifiedDto) {
+    const user = await this.prisma.user.findUnique({ where: { email: dto.email } });
     if (!user) throw new BadRequestException('No user found with this email');
 
     if (user.verified) {
@@ -80,33 +86,51 @@ export class AuthService {
     const otpExpiry = new Date(Date.now() + 5 * 60 * 1000); // 10 mins validity
 
     await this.prisma.user.update({
-      where: { email },
+      where: { email: dto.email },
       data: { otp, otpExpiresAt: otpExpiry },
     });
 
-    await this.mail.sendOtp(email, otp, 'Email Verification OTP');
+    await this.mail.sendOtp(dto.email, otp, 'Email Verification OTP');
 
     return { message: 'OTP sent to your email.' };
   }
 
   // otp verify for email verify
-  async verifyOtp(email: string, otp: string) {
-    const user = await this.prisma.user.findUnique({ where: { email } });
-    if (!user) throw new UnauthorizedException('No user');
-    if (user.verified) return { message: 'Already verified' };
-    if (
-      !user.otp ||
-      user.otp !== otp ||
-      !user.otpExpiresAt ||
-      user.otpExpiresAt < new Date()
-    ) {
-      throw new UnauthorizedException('Invalid or expired otp');
+  async verifyOtp(dto: OtpDto) {
+    const { email, otp } = dto;
+
+    // Find the user by email
+    const user = await this.prisma.user.findUnique({ where: { email: email.trim() } });
+    if (!user) {
+      throw new UnauthorizedException('No user found with this email');
     }
+
+    // Check if already verified
+    if (user.verified) {
+      return { message: 'User is already verified' };
+    }
+
+    // Validate OTP existence and match
+    if (!user.otp || user.otp !== otp) {
+      throw new UnauthorizedException('Invalid OTP');
+    }
+
+    // Check if OTP is expired
+    if (!user.otpExpiresAt || user.otpExpiresAt < new Date()) {
+      throw new UnauthorizedException('OTP has expired');
+    }
+
+    // ✅ OTP verified successfully
     await this.prisma.user.update({
       where: { email },
-      data: { verified: true, otp: null, otpExpiresAt: null },
+      data: {
+        verified: true,
+        otp: null,
+        otpExpiresAt: null,
+      },
     });
-    return { message: 'Verified' };
+
+    return { message: 'Email verification successful' };
   }
 
   // forget password......
@@ -163,7 +187,10 @@ export class AuthService {
     const expire = process.env.JWT_REFRESH_EXPIRE ?? '90d';
     const refreshSecreat =
       process.env.JWT_REFRESH_SECRET ?? 'refreshtokensecreat';
-    if (!secret || !expire || !refreshSecreat) throw new InternalServerErrorException("Secreat OR Expire OR Refresh secreat not found on .env file")
+    if (!secret || !expire || !refreshSecreat)
+      throw new InternalServerErrorException(
+        'Secreat OR Expire OR Refresh secreat not found on .env file',
+      );
     const accessToken = this.jwt.sign(payload, {
       secret: secret ?? 'access token secreat by sabbir',
       expiresIn: expire as StringValue,
@@ -233,4 +260,62 @@ export class AuthService {
     }
     return this.getTokens(user.id, user.email ?? '', user.role);
   }
+
+  // google login.....
+  async googleLogin(dto: GoogleLoginDto) {
+    let user = await this.prisma.user.findUnique({
+      where: { email: dto.email },
+    });
+
+    if (!user) {
+      const hash = dto.password ? await bcrypt.hash(dto.password, 10) : null;
+
+      user = await this.prisma.user.create({
+        data: {
+          fullName: dto.fullName,
+          email: dto.email,
+          password: hash,
+          role: Role.USER,
+          avatar: dto.avatar,
+          verified: true,
+        },
+      });
+    }
+
+    return this.getTokens(user.id, user.email ?? '', user.role);
+  }
+  // admin password reset...
+  async adminResetPassword(userId: string, dto: adminResetPasswordDto) {
+    const { oldPassword, newPassword } = dto;
+
+    // find the user
+    const user = await this.prisma.user.findUnique({ where: { id: userId } });
+    if (!user) throw new NotFoundException('User not found');
+
+    // verify the user is an ADMIN or SUPERADMIN
+    if (user.role !== 'ADMIN' && user.role !== 'SUPERADMIN') {
+      throw new BadRequestException('Only admin users can reset password');
+    }
+
+    // ensure user has a password (skip for Google/Facebook logins)
+    if (!user.password) {
+      throw new BadRequestException('This account has no password (social login)');
+    }
+
+    // compare old password
+    const isMatch = await bcrypt.compare(oldPassword, user.password);
+    if (!isMatch) throw new UnauthorizedException('Old password is incorrect');
+
+    // hash new password (with salt rounds = 10)
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+    // update password in database
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: { password: hashedPassword },
+    });
+
+    return { data: null};
+  }
+
 }

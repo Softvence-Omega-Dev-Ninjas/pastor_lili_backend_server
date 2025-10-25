@@ -1,7 +1,23 @@
-import { Controller, Get, Post, Body, Param, Patch, Delete, UseGuards, UseInterceptors, UploadedFiles } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Param,
+  Patch,
+  Delete,
+  UseGuards,
+  UseInterceptors,
+  UploadedFiles,
+} from '@nestjs/common';
 import { SpacesService } from './spaces.service';
 import { Reflector } from '@nestjs/core';
-import { ApiBearerAuth, ApiConsumes, ApiOperation, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiConsumes,
+  ApiOperation,
+  ApiTags,
+} from '@nestjs/swagger';
 import { GetUser } from 'src/common/decorators/get-user.decorator';
 import { CreateSpaceDto } from './dto/CreateSpace.dto';
 import { handleRequest } from 'src/common/utils/handle.request';
@@ -11,26 +27,28 @@ import { RolesGuard } from 'src/common/guards/roles.guard';
 import { Roles } from 'src/common/decorators/roles.decorator';
 import { FilesInterceptor } from '@nestjs/platform-express';
 
-
-@ApiTags("Spaces")
- @ApiBearerAuth("JWT-auth")
+@ApiTags('Spaces')
+@ApiBearerAuth('JWT-auth')
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('spaces')
 export class SpacesController {
-  constructor(private spacesService: SpacesService, private reflector: Reflector) { }
+  constructor(
+    private spacesService: SpacesService,
+    private reflector: Reflector,
+  ) {}
 
   // create new space only create admin and superAdmin.
   // Admin routes (create/update/delete)
 
-  @ApiOperation({ summary: "Protected Route For (ADMIN)" })
+  @ApiOperation({ summary: 'Protected Route For (ADMIN)' })
   @Roles('ADMIN', 'SUPERADMIN')
-  @Post("/")
+  @Post('/')
   @UseInterceptors(FilesInterceptor('files', 5)) // <-- multiple files
   @ApiConsumes('multipart/form-data')
   create(
     @Body() dto: CreateSpaceDto,
     @UploadedFiles() files: Express.Multer.File[],
-    @GetUser('id') userId: string
+    @GetUser('id') userId: string,
   ) {
     return handleRequest(
       () => this.spacesService.create(userId, dto, files),
@@ -38,11 +56,12 @@ export class SpacesController {
     );
   }
 
-
-  @Get("/")
+  @Get('/')
   list(@GetUser('id') userId: string) {
-    return handleRequest(() => this.spacesService.list(userId), 'Get All Space Successfully')
-
+    return handleRequest(
+      () => this.spacesService.list(userId),
+      'Get All Space Successfully',
+    );
   }
 
   @Get(':id')
@@ -53,7 +72,6 @@ export class SpacesController {
     );
   }
 
- 
   @ApiOperation({ summary: 'Protected Route For (ADMIN)' })
   @Roles('ADMIN', 'SUPERADMIN')
   @Patch(':id')
@@ -71,8 +89,7 @@ export class SpacesController {
     );
   }
 
-
-  @ApiOperation({ summary: "Protected Route For (ADMIN)" })
+  @ApiOperation({ summary: 'Protected Route For (ADMIN)' })
   @Roles('ADMIN', 'SUPERADMIN')
   @Delete(':id')
   delete(@GetUser('id') userId: string, @Param('id') id: string) {

@@ -7,10 +7,10 @@ export class MailService {
   constructor() {
     this.transporter = nodemailer.createTransport({
       service: 'gmail',
-      auth: { user: process.env.EMAIL_USER, pass: process.env.EMAIL_PASS }
+      auth: { user: process.env.EMAIL_USER, pass: process.env.EMAIL_PASS },
     });
   }
-  
+
   async sendOtp(to: string, otp: string, subject = 'Your Verification Code') {
     const html = `
     <div style="
@@ -67,7 +67,11 @@ export class MailService {
     });
   }
 
-  async forgetPassOtp(to: string, otp: string, subject = 'Reset Your Password') {
+  async forgetPassOtp(
+    to: string,
+    otp: string,
+    subject = 'Reset Your Password',
+  ) {
     const html = `
     <div style="
       font-family: 'Segoe UI', Arial, sans-serif;
@@ -122,5 +126,4 @@ export class MailService {
       from: process.env.EMAIL_USER,
     });
   }
-
 }

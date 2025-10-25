@@ -12,6 +12,11 @@ export class VerifyOtpDto {
 }
 
 export class OtpDto {
+  @ApiProperty({ example: 'john@gmail.com' })
+  @IsNotEmpty()
+  @IsString()
+  email: string; 
+
   @ApiProperty({ example: '1234' })
   @IsNotEmpty()
   otp: string;
