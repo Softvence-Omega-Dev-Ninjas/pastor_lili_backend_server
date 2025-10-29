@@ -22,7 +22,7 @@ import { GetUser } from 'src/common/decorators/get-user.decorator';
 import { CreateSpaceDto } from './dto/CreateSpace.dto';
 import { handleRequest } from 'src/common/utils/handle.request';
 import { UpdateSpaceDto } from './dto/UpdateSpace.dto';
-import { JwtAuthGuard } from 'src/common/guards/jwt.guard';
+import { JwtAuthGuard, ValidateAdmin } from 'src/common/guards/jwt.guard';
 import { RolesGuard } from 'src/common/guards/roles.guard';
 import { Roles } from 'src/common/decorators/roles.decorator';
 import { FilesInterceptor } from '@nestjs/platform-express';
@@ -33,16 +33,15 @@ export class SpacesController {
   constructor(
     private spacesService: SpacesService,
     private reflector: Reflector,
-  ) {}
+  ) { }
 
   // create new space only create admin and superAdmin.
   // Admin routes (create/update/delete)
 
-  @ApiBearerAuth('JWT-auth')
-  @UseGuards(JwtAuthGuard, RolesGuard)
   @ApiOperation({ summary: 'Protected Route For (ADMIN)' })
-  @Roles('ADMIN', 'SUPERADMIN')
-  @Post('/')
+  @ApiBearerAuth('JWT-auth')
+  @ValidateAdmin()
+  @Post()
   @UseInterceptors(FilesInterceptor('files', 5)) // <-- multiple files
   @ApiConsumes('multipart/form-data')
   create(
