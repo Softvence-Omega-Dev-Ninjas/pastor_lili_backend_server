@@ -28,8 +28,6 @@ import { Roles } from 'src/common/decorators/roles.decorator';
 import { FilesInterceptor } from '@nestjs/platform-express';
 
 @ApiTags('Spaces')
-@ApiBearerAuth('JWT-auth')
-@UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('spaces')
 export class SpacesController {
   constructor(
@@ -40,6 +38,8 @@ export class SpacesController {
   // create new space only create admin and superAdmin.
   // Admin routes (create/update/delete)
 
+  @ApiBearerAuth('JWT-auth')
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @ApiOperation({ summary: 'Protected Route For (ADMIN)' })
   @Roles('ADMIN', 'SUPERADMIN')
   @Post('/')
@@ -56,6 +56,7 @@ export class SpacesController {
     );
   }
 
+  @ApiBearerAuth('JWT-auth')
   @Get('/')
   list(@GetUser('id') userId: string) {
     return handleRequest(
@@ -64,6 +65,7 @@ export class SpacesController {
     );
   }
 
+  @ApiBearerAuth('JWT-auth')
   @Get(':id')
   get(@Param('id') id: string, @GetUser('id') userId: string) {
     return handleRequest(
@@ -72,6 +74,8 @@ export class SpacesController {
     );
   }
 
+  @ApiBearerAuth('JWT-auth')
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @ApiOperation({ summary: 'Protected Route For (ADMIN)' })
   @Roles('ADMIN', 'SUPERADMIN')
   @Patch(':id')
@@ -89,6 +93,8 @@ export class SpacesController {
     );
   }
 
+  @ApiBearerAuth('JWT-auth')
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @ApiOperation({ summary: 'Protected Route For (ADMIN)' })
   @Roles('ADMIN', 'SUPERADMIN')
   @Delete(':id')
