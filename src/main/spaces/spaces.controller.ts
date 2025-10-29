@@ -22,7 +22,7 @@ import { GetUser } from 'src/common/decorators/get-user.decorator';
 import { CreateSpaceDto } from './dto/CreateSpace.dto';
 import { handleRequest } from 'src/common/utils/handle.request';
 import { UpdateSpaceDto } from './dto/UpdateSpace.dto';
-import { JwtAuthGuard, ValidateAdmin } from 'src/common/guards/jwt.guard';
+import { JwtAuthGuard, ValidateAdmin, ValidateAuth } from 'src/common/guards/jwt.guard';
 import { RolesGuard } from 'src/common/guards/roles.guard';
 import { Roles } from 'src/common/decorators/roles.decorator';
 import { FilesInterceptor } from '@nestjs/platform-express';
@@ -56,6 +56,7 @@ export class SpacesController {
   }
 
   @ApiBearerAuth('JWT-auth')
+  @ValidateAuth()
   @Get('/')
   list(@GetUser('id') userId: string) {
     return handleRequest(
@@ -65,6 +66,7 @@ export class SpacesController {
   }
 
   @ApiBearerAuth('JWT-auth')
+  @ValidateAuth()
   @Get(':id')
   get(@Param('id') id: string, @GetUser('id') userId: string) {
     return handleRequest(
@@ -73,10 +75,9 @@ export class SpacesController {
     );
   }
 
-  @ApiBearerAuth('JWT-auth')
-  @UseGuards(JwtAuthGuard, RolesGuard)
   @ApiOperation({ summary: 'Protected Route For (ADMIN)' })
-  @Roles('ADMIN', 'SUPERADMIN')
+  @ApiBearerAuth('JWT-auth')
+  @ValidateAdmin()
   @Patch(':id')
   @UseInterceptors(FilesInterceptor('files', 5)) // allow up to 5 new images
   @ApiConsumes('multipart/form-data')
@@ -92,10 +93,9 @@ export class SpacesController {
     );
   }
 
-  @ApiBearerAuth('JWT-auth')
-  @UseGuards(JwtAuthGuard, RolesGuard)
   @ApiOperation({ summary: 'Protected Route For (ADMIN)' })
-  @Roles('ADMIN', 'SUPERADMIN')
+  @ApiBearerAuth('JWT-auth')
+  @ValidateAdmin()
   @Delete(':id')
   delete(@GetUser('id') userId: string, @Param('id') id: string) {
     return handleRequest(
