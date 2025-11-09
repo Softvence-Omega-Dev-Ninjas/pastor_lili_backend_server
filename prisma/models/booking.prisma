@@ -6,18 +6,16 @@ model Booking {
   endTime   DateTime
   status    BookingStatus @default(PENDING)
   paymentId String?
-  amount    Float 
+  amount    Float
   createdAt DateTime      @default(now())
-  user      User          @relation(fields: [userId], references: [id], onDelete: Cascade)
   space     Space         @relation(fields: [spaceId], references: [id], onDelete: Cascade)
-
-  Payment Payment[]
+  user      User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  Payment   Payment[]
 }
-// booking status
+
 enum BookingStatus {
   PENDING
   APPROVED
   REJECTED
   COMPLETED
 }
-

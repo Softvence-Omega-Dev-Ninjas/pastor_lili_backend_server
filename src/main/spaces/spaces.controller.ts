@@ -6,7 +6,6 @@ import {
   Param,
   Patch,
   Delete,
-  UseGuards,
   UseInterceptors,
   UploadedFiles,
 } from '@nestjs/common';
@@ -22,9 +21,7 @@ import { GetUser } from 'src/common/decorators/get-user.decorator';
 import { CreateSpaceDto } from './dto/CreateSpace.dto';
 import { handleRequest } from 'src/common/utils/handle.request';
 import { UpdateSpaceDto } from './dto/UpdateSpace.dto';
-import { JwtAuthGuard, ValidateAdmin, ValidateAuth } from 'src/common/guards/jwt.guard';
-import { RolesGuard } from 'src/common/guards/roles.guard';
-import { Roles } from 'src/common/decorators/roles.decorator';
+import { ValidateAdmin, ValidateAuth } from 'src/common/guards/jwt.guard';
 import { FilesInterceptor } from '@nestjs/platform-express';
 
 @ApiTags('Spaces')
@@ -33,7 +30,7 @@ export class SpacesController {
   constructor(
     private spacesService: SpacesService,
     private reflector: Reflector,
-  ) { }
+  ) {}
 
   // create new space only create admin and superAdmin.
   // Admin routes (create/update/delete)

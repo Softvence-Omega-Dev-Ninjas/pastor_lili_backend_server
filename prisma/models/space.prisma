@@ -1,20 +1,18 @@
 model Space {
   id          String    @id @default(uuid())
   title       String
-  subTitle    String?
   description String?
-  guidelines  String?
   price       Float
   capacity    Int?
   images      String[]  @default([])
-  amenities   Amenity[] @default([])
   createdAt   DateTime  @default(now())
-
-  // Relation to user.....
-  ownerId  String
-  owner    User      @relation(fields: [ownerId], references: [id], onDelete: Cascade)
-  bookings Booking[]
-  reviews  Review[]
+  ownerId     String
+  guidelines  String?
+  subTitle    String?
+  amenities   Amenity[] @default([])
+  bookings    Booking[]
+  reviews     Review[]
+  owner       User      @relation(fields: [ownerId], references: [id], onDelete: Cascade)
 }
 
 enum Amenity {

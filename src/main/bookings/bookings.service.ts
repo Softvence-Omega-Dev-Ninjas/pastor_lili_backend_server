@@ -2,7 +2,6 @@ import {
   Injectable,
   BadRequestException,
   NotFoundException,
-  UseGuards,
 } from '@nestjs/common';
 import Stripe from 'stripe';
 import { ConfigService } from '@nestjs/config';
@@ -119,9 +118,9 @@ export class BookingsService {
   }
 
   // findAllBooking
-  async findAllBooking(){
-    const bookings = await this.prisma.booking.findMany({})
-    return bookings
+  async findAllBooking() {
+    const bookings = await this.prisma.booking.findMany({});
+    return bookings;
   }
 
   // web hook.....

@@ -1,15 +1,13 @@
-import {
-  Controller,
-  Post,
-  Body,
-  Patch,
-  UseGuards
-} from '@nestjs/common';
+import { Controller, Post, Body, Patch, UseGuards } from '@nestjs/common';
 import { SignupDto } from './dto/signup.dto';
 import { LoginDto } from './dto/login.dto';
 import { AuthService } from './auth.service';
 import { OtpDto, VerifyOtpDto } from './dto/verifyOtp.dto';
-import { EmailVerifiedDto, ForgetPasswordDto, ResetPasswordDto } from './dto/forgetPassword.dto';
+import {
+  EmailVerifiedDto,
+  ForgetPasswordDto,
+  ResetPasswordDto,
+} from './dto/forgetPassword.dto';
 import { handleRequest } from 'src/common/utils/handle.request';
 import { GoogleLoginDto } from './dto/GoogleLogin.dto';
 import { adminResetPasswordDto } from './dto/adminResetPassword.dto';
@@ -21,7 +19,7 @@ import { Roles } from 'src/common/decorators/roles.decorator';
 
 @Controller('auth')
 export class AuthController {
-  constructor(private authService: AuthService) { }
+  constructor(private authService: AuthService) {}
 
   @Post('signup')
   signup(@Body() dto: SignupDto) {
@@ -86,12 +84,13 @@ export class AuthController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('ADMIN', 'SUPERADMIN')
   @Patch('admin-reset-password')
-  async adminResetPassword(@GetUser('id') userId:string, @Body() dto: adminResetPasswordDto ){
-     return handleRequest(
+  async adminResetPassword(
+    @GetUser('id') userId: string,
+    @Body() dto: adminResetPasswordDto,
+  ) {
+    return handleRequest(
       () => this.authService.adminResetPassword(userId, dto),
       'admin Password Reset successfully',
     );
   }
-
-
 }

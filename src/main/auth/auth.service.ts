@@ -22,7 +22,6 @@ import { EmailVerifiedDto } from './dto/forgetPassword.dto';
 import { OtpDto } from './dto/verifyOtp.dto';
 import { adminResetPasswordDto } from './dto/adminResetPassword.dto';
 
-
 expand(config({ path: path.resolve(process.cwd(), '.env') }));
 
 @Injectable()
@@ -33,7 +32,7 @@ export class AuthService {
     private mail: MailService,
     private twilio: TwilioService,
     private readonly configService: ConfigService,
-  ) { }
+  ) {}
 
   private generateOtp() {
     return Math.floor(1000 + Math.random() * 9000).toString();
@@ -42,9 +41,14 @@ export class AuthService {
   async signup(dto: SignupDto) {
     const exists = await this.prisma.user.findFirst({
       where: { email: dto.email },
+      select: {
+        email: true,
+        id: true,
+      },
     });
-    if (exists)
-      throw new BadRequestException('You already registered. Please Login');
+    if (exists) {
+      return { exists, message: 'Your are already register. Please login' };
+    }
     const hash = await bcrypt.hash(dto.password, 10);
     const otp = this.generateOtp();
     const otpExpiry = new Date(Date.now() + 10 * 60 * 1000);
@@ -58,8 +62,9 @@ export class AuthService {
         verified: false,
       },
     });
+
     await this.mail.sendOtp(dto.email, otp);
-    return { message: 'User created. OTP sent to email.' };
+    return { user, message: 'User created. OTP sent to email.' };
   }
   // user login
   async login(dto: { email: string; password: string }) {
@@ -75,7 +80,9 @@ export class AuthService {
 
   // send otp for email verifications.
   async resendOtp(dto: EmailVerifiedDto) {
-    const user = await this.prisma.user.findUnique({ where: { email: dto.email } });
+    const user = await this.prisma.user.findUnique({
+      where: { email: dto.email },
+    });
     if (!user) throw new BadRequestException('No user found with this email');
 
     if (user.verified) {
@@ -100,7 +107,9 @@ export class AuthService {
     const { email, otp } = dto;
 
     // Find the user by email
-    const user = await this.prisma.user.findUnique({ where: { email: email.trim() } });
+    const user = await this.prisma.user.findUnique({
+      where: { email: email.trim() },
+    });
     if (!user) {
       throw new UnauthorizedException('No user found with this email');
     }
@@ -299,7 +308,9 @@ export class AuthService {
 
     // ensure user has a password (skip for Google/Facebook logins)
     if (!user.password) {
-      throw new BadRequestException('This account has no password (social login)');
+      throw new BadRequestException(
+        'This account has no password (social login)',
+      );
     }
 
     // compare old password
@@ -315,7 +326,6 @@ export class AuthService {
       data: { password: hashedPassword },
     });
 
-    return { data: null};
+    return { data: null };
   }
-
 }

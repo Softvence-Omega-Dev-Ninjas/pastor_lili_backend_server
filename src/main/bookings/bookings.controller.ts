@@ -51,13 +51,12 @@ export class BookingsController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('ADMIN', 'SUPERADMIN')
   @Get('/')
-  async findAllBooking(){
+  async findAllBooking() {
     return handleRequest(
       () => this.bookingsService.findAllBooking(),
       'Get All Booking successfully',
     );
   }
-
 
   // Stripe webhook - expects raw body; route registered in main.ts as raw.
   @Post('webhook')

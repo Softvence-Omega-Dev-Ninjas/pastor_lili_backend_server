@@ -38,7 +38,7 @@ export class ChatGateway
   // -----------------
 
   afterInit(server: Server) {
-    console.log('Chat WebSocket Gateway initialized');
+    this.logger.log('Chat WebSocket Gateway initialized', server.adapter.name);
   }
 
   // -------------------
@@ -210,7 +210,7 @@ export class ChatGateway
     @ConnectedSocket() client: Socket,
   ) {
     const { userId, messageId } = data;
-    const result = await this.chatService.removeMessage(userId, messageId);
+    await this.chatService.removeMessage(userId, messageId);
     client.emit('message_deleted', { messageId, success: true });
   }
 }

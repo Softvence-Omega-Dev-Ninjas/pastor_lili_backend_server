@@ -4,8 +4,6 @@ import {
   Patch,
   Body,
   UseGuards,
-  Req,
-  Post,
   UseInterceptors,
   UploadedFile,
   ConflictException,
@@ -30,7 +28,7 @@ import { FileInterceptor } from '@nestjs/platform-express';
 @UseGuards(JwtAuthGuard)
 @Controller('users')
 export class UsersController {
-  constructor(private usersService: UsersService) { }
+  constructor(private usersService: UsersService) {}
 
   // Get profile
   @Get('me')
@@ -66,13 +64,10 @@ export class UsersController {
 
   @ApiOperation({ summary: 'Update user information' })
   @Delete('me')
-  async remove(
-    @GetUser('id') userId: string,
-  ) {
+  async remove(@GetUser('id') userId: string) {
     return handleRequest(
       () => this.usersService.remove(userId),
       'delete account successfully',
     );
   }
-
 }

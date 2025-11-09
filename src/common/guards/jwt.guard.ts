@@ -14,7 +14,7 @@ import { Reflector } from '@nestjs/core';
 @Injectable()
 export class JwtAuthGuard extends AuthGuard('jwt') {
   handleRequest(err, user, info) {
-    console.log("jwt auth guard", err, user, info);
+    console.log('jwt auth guard', err, user, info);
     if (err || !user) throw err || new UnauthorizedException();
     return user;
   }
@@ -22,7 +22,7 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
 
 @Injectable()
 export class RolesGuard implements CanActivate {
-  constructor(private reflector: Reflector) { }
+  constructor(private reflector: Reflector) {}
   canActivate(context: ExecutionContext): boolean {
     const required =
       this.reflector.get<string[]>('roles', context.getHandler()) || [];

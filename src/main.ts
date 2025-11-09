@@ -8,6 +8,24 @@ import appMetadata from './app-metadata/app-metadata';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+
+  app.enableCors({
+    origin: [
+      'http://localhost:3001',
+      'http://localhost:3002',
+      'http://localhost:3003',
+      'http://localhost:3004',
+      'http://localhost:5173',
+      'http://localhost:5174',
+      'http://localhost:5175',
+      'http://localhost:5176',
+      'http://localhost:5177',
+      'https://pastorlili-dashboard.vercel.app',
+    ],
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+    credentials: true,
+  });
+
   const config = new DocumentBuilder()
     .setTitle(appMetadata.displayName)
     .setDescription(appMetadata.description)
@@ -32,7 +50,6 @@ async function bootstrap() {
   app.use(cookieParser());
   app.use(json({ limit: '10mb' }));
   app.use(urlencoded({ extended: true }));
-  app.enableCors('http://localhost:3001');
 
   // Make raw body available for the Stripe webhook route
   const expressApp = app.getHttpAdapter().getInstance();

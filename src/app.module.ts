@@ -11,8 +11,6 @@ import { ReviewsModule } from './main/review/review.module';
 import { AppController } from './app.controller';
 import { SeedModule } from './lib/seed/seed.module';
 
-
-
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
@@ -24,8 +22,8 @@ import { SeedModule } from './lib/seed/seed.module';
     ChatModule,
     CloudinaryModule,
     ReviewsModule,
-    SeedModule
+    SeedModule,
   ],
   controllers: [AppController],
 })
-export class AppModule { }
+export class AppModule {}

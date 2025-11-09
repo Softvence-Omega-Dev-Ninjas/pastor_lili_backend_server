@@ -2,9 +2,9 @@ model Message {
   id         String   @id @default(uuid())
   senderId   String
   receiverId String
-  content    String? // Optional text
-  imageUrl   String? // Optional image URL
+  content    String?
   createdAt  DateTime @default(now())
-  sender     User     @relation("SentMessages", fields: [senderId], references: [id], onDelete: Cascade)
+  imageUrl   String?
   receiver   User     @relation("ReceivedMessages", fields: [receiverId], references: [id], onDelete: Cascade)
+  sender     User     @relation("SentMessages", fields: [senderId], references: [id], onDelete: Cascade)
 }

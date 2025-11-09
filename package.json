@@ -25,6 +25,7 @@
     "start:docker": "prisma generate && prisma migrate deploy && node dist/src/main",
     "lint:fix": "eslint . --ext .ts,.js,.jsx,.tsx --fix",
     "format:fix": "prettier --ignore-path .gitignore --write \"**/*.+(js|ts|json)\"",
+    "ci:check": "npm run format && npm run lint && npm run build && npm run start:prod",
     "ci:fix": "npm run format:fix"
   },
   "dependencies": {

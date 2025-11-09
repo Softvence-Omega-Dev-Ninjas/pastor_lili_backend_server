@@ -26,4 +26,3 @@ export class EmailVerifiedDto {
   @IsString()
   email: string; // email or phone
 }
-

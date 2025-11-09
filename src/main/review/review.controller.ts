@@ -1,14 +1,5 @@
-import {
-  Controller,
-  Post,
-  Body,
-  UseGuards,
-  Req,
-  Get,
-  Param,
-} from '@nestjs/common';
+import { Controller, Post, Body, UseGuards, Get, Param } from '@nestjs/common';
 import { CreateReviewDto } from './dto/create-review.dto';
-import { AuthGuard } from '@nestjs/passport';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { ReviewsService } from './review.service';
 import { JwtAuthGuard } from 'src/common/guards/jwt.guard';
