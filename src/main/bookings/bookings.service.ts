@@ -19,9 +19,7 @@ export class BookingsService {
     const stripeSecret = this.config.get<string>('STRIPE_SECRET');
     if (!stripeSecret) throw new Error('Missing STRIPE_SECRET');
 
-    this.stripe = new Stripe(stripeSecret, {
-      apiVersion: '2025-09-30.clover', // <- updated version
-    });
+    this.stripe = new Stripe(stripeSecret);
   }
   // create booking
   async createBooking(userId: string, dto: CreateBookingDto) {
