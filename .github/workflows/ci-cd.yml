@@ -76,7 +76,7 @@ jobs:
           username: root
           key: ${{ secrets.VPS_SSH_PRIVATE_KEY }}
           source: 'docker-compose.yaml'
-          target: '/home/${{ secrets.VPS_USER }}/pastor_lili_backend'
+          target: '/root/pastor_lili_backend'
 
       - name: Copy Caddy File
         uses: appleboy/scp-action@v0.1.7
@@ -85,7 +85,7 @@ jobs:
           username: root
           key: ${{ secrets.VPS_SSH_PRIVATE_KEY }}
           source: 'Caddyfile'
-          target: '/home/${{ secrets.VPS_USER }}/pastor_lili_backend'
+          target: '/root/pastor_lili_backend'
 
       - name: Deploy via SSH
         uses: appleboy/ssh-action@v1.0.3
