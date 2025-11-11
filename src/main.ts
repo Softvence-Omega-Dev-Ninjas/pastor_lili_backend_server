@@ -21,6 +21,8 @@ async function bootstrap() {
       'http://localhost:5176',
       'http://localhost:5177',
       'https://pastorlili-dashboard.vercel.app',
+      'http://72.60.175.188:4173',
+      'http://72.60.175.188:3000',
     ],
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     credentials: true,
