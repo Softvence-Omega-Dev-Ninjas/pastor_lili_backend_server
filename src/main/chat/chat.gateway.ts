@@ -16,7 +16,24 @@ import { ConfigService } from '@nestjs/config';
 import { PrismaService } from 'src/lib/prisma/prisma.service';
 
 @WebSocketGateway({
-  cors: { origin: '*' },
+  cors: {
+    origin: [
+      'http://localhost:3001',
+      'http://localhost:3002',
+      'http://localhost:3003',
+      'http://localhost:3004',
+      'http://localhost:5173',
+      'http://localhost:5174',
+      'http://localhost:5175',
+      'http://localhost:5176',
+      'http://localhost:5177',
+      'https://pastorlili-dashboard.vercel.app',
+      'http://72.60.175.188:4173',
+      'http://72.60.175.188:3000',
+    ],
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  },
   namespace: '/chat',
 })
 @Injectable()
